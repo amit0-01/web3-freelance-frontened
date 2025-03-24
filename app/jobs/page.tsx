@@ -1,3 +1,4 @@
+"use client"
 import { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -93,9 +94,9 @@ export default function JobsPage() {
             </div>
 
             <div className="md:col-span-3">
-              {/* <Suspense fallback={<JobsListSkeleton />}> */}
+              <Suspense fallback={<JobsListSkeleton />}>
                 <JobsList />
-              {/* </Suspense> */}
+              </Suspense>
             </div>
           </div>
         </div>

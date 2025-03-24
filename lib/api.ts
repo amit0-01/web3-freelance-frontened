@@ -159,39 +159,38 @@ const mockJobs: Job[] = [
   },
 ]
 
-export async function getJobs(limit?: number) {
+export async function getJobs(context: any, limit?: number) {
   try {
-    const token = (await cookies()).get("token")?.value; // Read token from cookies
-    if (!token) {
-      throw new Error("No authentication token found.");
-    }
+    // const { req } = context; // Get request object from context
+    // const token = req.cookies["token"]; // Access token from cookies
 
-    const response = await axiosInstance.get("/blockchain/jobs", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    // if (!token) {
+    //   throw new Error("No authentication token found.");
+    // }
+
+    const response = await axiosInstance.get("/blockchain/jobs");
+    console.log('response',response);
 
     return response.data;
   } catch (error: any) {
-    console.error("❌ Error fetching jobs:", error.response?.data || error.message);
-    if (error.response?.status === 401) {
-      throw new Error("Unauthorized: Please log in again.");
-    }
-    throw error;
+    // console.log("❌ Error fetching jobs:", error.response?.data || error.message);
+    // if (error.response?.status === 401) {
+    //   throw new Error("Unauthorized: Please log in again.");
+    // }
+    // throw error;
   }
 }
 
 export async function getJobDetail(id: string): Promise<Job> {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500))
+  const response = await axiosInstance.get(`/blockchain/jobs/${id}`);
 
-  const job = mockJobs.find((job) => job.id === id)
-
-  if (!job) {
-    throw new Error("Job not found")
+  if (!response.data) {
+    throw new Error("Job not found");
   }
 
-  return job
+  return response.data; 
 }
+
 
 export async function completeJob(jobId: string): Promise<{ success: boolean }> {
   // Simulate API call delay

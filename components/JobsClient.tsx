@@ -13,6 +13,7 @@ interface Job {
 }
 
 export default function JobsClient({ jobs }: { jobs: Job[] }) {
+  console.log('jobs',jobs)
   if (!jobs.length) {
     return (
       <div className="text-center py-8">
