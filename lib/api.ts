@@ -3,6 +3,7 @@
 
 import { cookies } from "next/headers"
 import axiosInstance from "./axiosInstance"
+import axios from 'axios';
 
 interface Client {
   id: string
@@ -182,15 +183,13 @@ export async function getJobs(context: any, limit?: number) {
 }
 
 export async function getJobDetail(id: string): Promise<Job> {
-  const response = await axiosInstance.get(`/blockchain/jobs/${id}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/jobs/${id}`);
 
-  if (!response.data) {
-    throw new Error("Job not found");
-  }
-
-  return response.data; 
+  if (!res.ok) throw new Error("Failed to fetch job details");
+  
+  return res.json();
 }
-
 
 export async function completeJob(jobId: string): Promise<{ success: boolean }> {
   // Simulate API call delay

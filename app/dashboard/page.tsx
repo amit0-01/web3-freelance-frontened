@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
 import { Skeleton } from "@/components/ui/skeleton"
+import WalletBalanceCard from "@/components/walletBalanceCard"; // Move balance fetching to a client component
+
 
 export default function DashboardPage() {
   return (
@@ -55,22 +57,9 @@ export default function DashboardPage() {
                 </Link>
               </CardFooter>
             </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Wallet Balance</CardTitle>
-                <CardDescription>Your current balance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">2.45 ETH</div>
-              </CardContent>
-              <CardFooter>
-                <Link href="/dashboard/wallet">
-                  <Button variant="ghost" className="h-8 px-2 text-sm">
-                    Manage
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
+            <Suspense fallback={<div>Loading wallet balance...</div>}>
+            <WalletBalanceCard />
+          </Suspense>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">

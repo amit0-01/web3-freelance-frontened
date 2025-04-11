@@ -39,6 +39,8 @@ export async function GET(request: Request) {
       },
     ]
 
+    console.log('job',jobs)
+
     // Apply limit if provided
     const limitedJobs = limit ? jobs.slice(0, Number.parseInt(limit)) : jobs
 

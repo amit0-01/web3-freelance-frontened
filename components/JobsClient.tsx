@@ -24,35 +24,38 @@ export default function JobsClient({ jobs }: { jobs: Job[] }) {
 
   return (
     <div className="space-y-4">
-      {jobs.map((job) => (
-        <Card key={job.id}>
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg">
-                    <Link href={`/jobs/${job.id}`} className="hover:underline">
-                      {job.title}
-                    </Link>
-                  </h3>
-                  <Badge variant="outline">{job.title}</Badge>
-                  {job.isUrgent && <Badge variant="destructive">Urgent</Badge>}
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="text-right">
-                  <div className="font-bold">{job.payment} ETH</div>
-                </div>
+    {jobs.map((job) => (
+      <Card key={job.id}>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-lg">
+                  <Link href={`/jobs/${job.id}`} className="hover:underline">
+                    {job.title}
+                  </Link>
+                </h3>
+                <Badge variant="outline">{job.title}</Badge>
+                {job.isUrgent && <Badge variant="destructive">Urgent</Badge>}
               </div>
             </div>
-          </CardContent>
-          <CardFooter className="px-6 py-4 bg-muted/50 flex flex-wrap justify-between gap-2">
-            <Link href={`/jobs/${job.id}`}>
+            <div className="flex flex-col items-end gap-2">
+              <div className="text-right">
+                <div className="font-bold">{job.payment} ETH</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="px-6 py-4 bg-muted/50 flex flex-wrap justify-between gap-2">
+        <Link href={`/jobs/${job.id}`}>
+        <Button size="sm">View Details</Button>
+          </Link>
+          <Link href={`/jobs/${job.id}`}>
               <Button size="sm">View Details</Button>
             </Link>
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
+        </CardFooter>
+      </Card>
+    ))}
+  </div>
   );
 }
