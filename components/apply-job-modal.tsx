@@ -29,7 +29,7 @@ interface ApplyJobModalProps {
 export default function ApplyJobModal({ job, isOpen, onClose }: ApplyJobModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [coverLetter, setCoverLetter] = useState("")
-  const [proposedRate, setProposedRate] = useState(job.budget.toString())
+  const [proposedRate, setProposedRate] = useState(job?.payment?.toString())
   const [estimatedDuration, setEstimatedDuration] = useState("")
   const [portfolioLink, setPortfolioLink] = useState("")
   const { toast } = useToast()

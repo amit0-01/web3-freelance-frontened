@@ -8,6 +8,9 @@ import DashboardNav from "@/components/dashboard-nav"
 import { getJobDetail, type Job } from "@/lib/api"
 import { useState, useEffect } from "react"
 import ApplyJobModal from "@/components/apply-job-modal"
+import { use } from "react";
+
+
 
 interface JobDetailPageProps {
   params: {
@@ -15,25 +18,27 @@ interface JobDetailPageProps {
   }
 }
 
-export default function JobDetailPage({ params }: JobDetailPageProps) {
-  const [job, setJob] = useState<Job | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+
+  const [job, setJob] = useState<Job | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        const jobData = await getJobDetail(params.id)
-        setJob(jobData)
+        const jobData = await getJobDetail(id);
+        setJob(jobData);
       } catch (error) {
-        console.error("Error fetching job details:", error)
+        console.error("Error fetching job details:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchJobDetails()
-  }, [params.id])
+    fetchJobDetails();
+  }, [id]);
 
   if (isLoading || !job) {
     return (
@@ -82,18 +87,18 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
                     <p>{job.description}</p>
 
                     <h3>Requirements</h3>
-                    <ul>
+                    {/* <ul>
                       {job.requirements.map((req, index) => (
                         <li key={index}>{req}</li>
                       ))}
-                    </ul>
+                    </ul> */}
 
                     <h3>Responsibilities</h3>
-                    <ul>
+                    {/* <ul>
                       {job.responsibilities.map((resp, index) => (
                         <li key={index}>{resp}</li>
                       ))}
-                    </ul>
+                    </ul> */}
                   </div>
                 </CardContent>
               </Card>
@@ -145,7 +150,7 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
                 </CardFooter>
               </Card>
 
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle>About the Client</CardTitle>
                 </CardHeader>
@@ -166,7 +171,7 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
                     <span className="font-medium">{job.client.rating}/5</span>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </div>
         </div>

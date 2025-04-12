@@ -29,7 +29,8 @@ export interface Job {
   requirements: string[]
   responsibilities: string[]
   deliverables: string[]
-  paymentType: string
+  paymentType: string,
+  payment? : string
 }
 
 const mockClients: Client[] = [
@@ -160,35 +161,28 @@ const mockJobs: Job[] = [
   },
 ]
 
-export async function getJobs(context: any, limit?: number) {
+
+export async function getJobs(search?: string) {
   try {
-    // const { req } = context; // Get request object from context
-    // const token = req.cookies["token"]; // Access token from cookies
+    const url = search
+      ? `/blockchain/jobs?search=${encodeURIComponent(search)}`
+      : "/blockchain/jobs"
 
-    // if (!token) {
-    //   throw new Error("No authentication token found.");
-    // }
-
-    const response = await axiosInstance.get("/blockchain/jobs");
-    console.log('response',response);
-
-    return response.data;
+    const response = await axiosInstance.get(url)
+    return response.data
   } catch (error: any) {
-    // console.log("❌ Error fetching jobs:", error.response?.data || error.message);
-    // if (error.response?.status === 401) {
-    //   throw new Error("Unauthorized: Please log in again.");
-    // }
-    // throw error;
+    console.error("Error fetching jobs:", error)
+    throw error
   }
 }
 
-export async function getJobDetail(id: string): Promise<Job> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/jobs/${id}`);
-
-  if (!res.ok) throw new Error("Failed to fetch job details");
-  
-  return res.json();
+export async function getJobDetail(id: string){
+  try {
+    const response = await axiosInstance.get(`/blockchain/jobs/${id}`)
+    return response.data;
+  } catch (error) {
+    throw error
+  }
 }
 
 export async function completeJob(jobId: string): Promise<{ success: boolean }> {

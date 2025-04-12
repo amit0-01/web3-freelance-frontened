@@ -7,18 +7,17 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/axiosInstance"
 import { storageService } from "@/lib/storageService"
 import { ethers } from "ethers"
 import Cookies from "js-cookie"; 
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,22 +27,17 @@ export default function LoginPage() {
       const response = await axiosInstance.post("/auth/login", { email, password })
 
       const data = response.data
-
+      const expiryTimestamp = Date.now() + 60 * 60 * 1000
+      // const expiryTimestamp = Date.now() + 60 * 1000
       storageService.setItem("user", data)
-      Cookies.set("token", data.accessToken, { expires: 7, secure: true, sameSite: "Strict" });
+      storageService.setItem('tokenExpiry', expiryTimestamp)
+      Cookies.set("token", data.accessToken, { expires: 1 / 24, secure: true, sameSite: "Strict" });
 
-      toast({
-        title: "Login successful",
-        description: "You have been logged in successfully.",
-      })
+      toast.success("Login successful")
 
       router.push("/dashboard")
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.response?.data?.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      })
+      toast.error('Login Failed')
     } finally {
       setIsLoading(false)
     }
@@ -52,11 +46,7 @@ export default function LoginPage() {
   // Web3 Authentication with MetaMask
   const handleWeb3Login = async () => {
     if (!window.ethereum) {
-      toast({
-        title: "MetaMask not found",
-        description: "Please install MetaMask to log in with Web3.",
-        variant: "destructive",
-      })
+      toast.error("MetaMask not found")
       return
     }
 
@@ -74,21 +64,17 @@ export default function LoginPage() {
       // Send walletAddress and signature to backend for verification
       const response = await axiosInstance.post("/auth/web3-login", { walletAddress, signature })
       const data = response.data
+      const expiryTimestamp = Date.now() + 60 * 60 * 1000
+      storageService.setItem('tokenExpiry', expiryTimestamp)
+      Cookies.set("token", data.accessToken, { expires: 1 / 24, secure: true, sameSite: "Strict" });
 
       storageService.setItem("user", data)
 
-      toast({
-        title: "Login successful",
-        description: "You have been logged in with your wallet.",
-      })
+      toast.success("Login successful")
 
       router.push("/dashboard")
     } catch (error: any) {
-      toast({
-        title: "Web3 Login failed",
-        description: "Could not authenticate with MetaMask. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Web3 Login failed")
     } finally {
       setIsLoading(false)
     }

@@ -12,8 +12,6 @@ axiosInstance.interceptors.request.use(
     // Use js-cookie to get the accessToken on the client side
     const token = Cookies.get("token");
 
-    console.log("Token:", token);
-
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     } else {

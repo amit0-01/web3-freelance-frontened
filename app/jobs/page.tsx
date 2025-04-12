@@ -1,5 +1,5 @@
 "use client"
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,8 @@ import JobsList from "@/components/jobs-list"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function JobsPage() {
+  const [search, setSearch] = useState("")
+
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardNav />
@@ -27,7 +29,8 @@ export default function JobsPage() {
           <div className="grid gap-4 md:grid-cols-4">
             <div className="md:col-span-3">
               <div className="relative">
-                <Input placeholder="Search jobs..." className="pl-10" />
+                <Input placeholder="Search jobs..." className="pl-10" 
+                onChange={(e) => setSearch(e.target.value)}/>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -94,9 +97,7 @@ export default function JobsPage() {
             </div>
 
             <div className="md:col-span-3">
-              <Suspense fallback={<JobsListSkeleton />}>
-                <JobsList />
-              </Suspense>
+                <JobsList search={search}  />
             </div>
           </div>
         </div>
@@ -104,26 +105,3 @@ export default function JobsPage() {
     </div>
   )
 }
-
-function JobsListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array(5)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="rounded-lg border p-4">
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <div className="flex gap-2 pt-2">
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-8 w-16" />
-              </div>
-            </div>
-          </div>
-        ))}
-    </div>
-  )
-}
-

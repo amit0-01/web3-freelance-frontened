@@ -13,13 +13,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Home, Briefcase, Wallet, Bell, User, Menu, X, LogOut } from "lucide-react"
+import Cookies from "js-cookie"
+import { useRouter } from "next/navigation"
 
 export default function DashboardNav() {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const router = useRouter()
+
 
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(`${path}/`)
+  }
+
+  const handleLogout = ()=>{
+    Cookies.remove("token");
+    localStorage.removeItem("tokenExpiry")
+    localStorage.removeItem("user")
+    router.push("/auth/login")
   }
 
   return (
@@ -92,7 +103,7 @@ export default function DashboardNav() {
                   <Link href="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-500">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
