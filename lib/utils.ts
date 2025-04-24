@@ -14,3 +14,8 @@ export function getUserDetails(){
   return user.user;
 }
 
+export function getUserRole(){
+  const user:any = storageService.getItem('user');
+  return user?.user?.role;
+}
+

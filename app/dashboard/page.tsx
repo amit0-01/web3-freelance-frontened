@@ -1,4 +1,4 @@
-import { Suspense } from "react"
+import { Suspense, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +9,7 @@ import WalletBalanceCard from "@/components/walletBalanceCard"; // Move balance 
 
 
 export default function DashboardPage() {
+
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardNav />
@@ -62,16 +63,16 @@ export default function DashboardPage() {
           </Suspense>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          {/* <div className="grid gap-6 md:grid-cols-2">
             <Card className="col-span-1 md:col-span-2">
               <CardHeader>
                 <CardTitle>Recent Jobs</CardTitle>
                 <CardDescription>Recently posted jobs that match your skills</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Suspense fallback={<JobsListSkeleton />}>
-                  <JobsList limit={5} />
-                </Suspense>
+              <CardContent> */}
+              {/* <div className="md:col-span-3"> */}
+              <JobsList/>
+              {/* </div>
               </CardContent>
               <CardFooter>
                 <Link href="/jobs">
@@ -79,28 +80,9 @@ export default function DashboardPage() {
                 </Link>
               </CardFooter>
             </Card>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
   )
 }
-
-function JobsListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array(5)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-        ))}
-    </div>
-  )
-}
-
