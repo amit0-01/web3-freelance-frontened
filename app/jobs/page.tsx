@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
-import { Skeleton } from "@/components/ui/skeleton"
 
 export default function JobsPage() {
   const [search, setSearch] = useState("")

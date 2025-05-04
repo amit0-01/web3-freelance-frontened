@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,6 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import type { Job } from "@/lib/api"
 import axiosInstance from "@/lib/axiosInstance"
+import { useParams } from "next/navigation"
+import { toast } from 'react-toastify';
+
 
 interface ApplyJobModalProps {
   job: Job
@@ -32,7 +35,11 @@ export default function ApplyJobModal({ job, isOpen, onClose }: ApplyJobModalPro
   const [proposedRate, setProposedRate] = useState(job?.payment?.toString())
   const [estimatedDuration, setEstimatedDuration] = useState("")
   const [portfolioLink, setPortfolioLink] = useState("")
-  const { toast } = useToast()
+  const params = useParams();
+
+  useEffect(()=>{
+    console.log('pars', params.id);
+  })
 
 
 const handleSubmit = async (e: React.FormEvent) => {
@@ -41,33 +48,25 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     const applicationData = {
-      jobId: Number(2), // static will change
+      jobId: params.id, 
       coverLetter,
       proposedRate: Number.parseFloat(proposedRate),
       estimatedDuration,
       portfolioLink,
     }
-
+    console.log('applicationdata', applicationData)
     // Submit via Axios instance
-    await axiosInstance.post(`blockchain/jobs/${2}/apply`, applicationData)
-
-    toast({
-      title: "Application submitted",
-      description: "Your job application has been submitted successfully.",
-    })
-
+    await axiosInstance.post(`blockchain/jobs/${params.id}/apply`, applicationData)
+    toast.success("Application submitted successfully");
     // Close the modal and reset form
     onClose()
     setCoverLetter("")
-    setProposedRate(job.budget.toString())
+    setProposedRate(job?.payment?.toString())
     setEstimatedDuration("")
     setPortfolioLink("")
-  } catch (error) {
-    toast({
-      title: "Application failed",
-      description: "There was an error submitting your application. Please try again.",
-      variant: "destructive",
-    })
+  } catch (error:any) {
+    console.log('error', error) 
+    toast.error(error.response.data.message || "Failed to submit application")
   } finally {
     setIsSubmitting(false)
   }
@@ -107,7 +106,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <Input
                 id="proposedRate"
                 type="number"
-                step="0.01"
+                step="0.0001"
                 min="0"
                 value={proposedRate}
                 onChange={(e) => setProposedRate(e.target.value)}

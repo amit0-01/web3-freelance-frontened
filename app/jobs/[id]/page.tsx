@@ -128,7 +128,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Budget:</span>
-                    <span className="font-medium">{job.budget} ETH</span>
+                    <span className="font-medium">{job.payment} ETH</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Duration:</span>
