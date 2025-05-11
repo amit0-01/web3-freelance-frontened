@@ -6,9 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
+import { getUserRole } from "@/lib/utils"
 
 export default function JobsPage() {
   const [search, setSearch] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("All")
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -61,25 +67,38 @@ export default function JobsPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-4">
-            <div className="space-y-6 md:col-span-1">
+          {getUserRole() == 'FREELANCER' &&  <div className="space-y-6 md:col-span-1">
               <div className="space-y-2">
                 <h3 className="font-medium">Categories</h3>
                 <div className="space-y-1">
-                  <Button variant="ghost" className="w-full justify-start">
-                    All Categories
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Development
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Design
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Marketing
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Content
-                  </Button>
+                <Button
+                variant="ghost"
+                className={`w-full justify-start ${selectedCategory === 'All' ? 'bg-muted font-semibold' : ''}`}
+                onClick={() => handleCategoryClick('All')}
+              >
+                All Categories
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start ${selectedCategory === 'Development' ? 'bg-muted font-semibold' : ''}`}
+                onClick={() => handleCategoryClick('Development')}
+              >
+                Development
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start ${selectedCategory === 'Design' ? 'bg-muted font-semibold' : ''}`}
+                onClick={() => handleCategoryClick('Design')}
+              >
+                Design
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start ${selectedCategory === 'Marketing' ? 'bg-muted font-semibold' : ''}`}
+                onClick={() => handleCategoryClick('Marketing')}
+              >
+                Marketing
+              </Button>
                 </div>
               </div>
 
@@ -93,10 +112,10 @@ export default function JobsPage() {
                   Apply Filter
                 </Button>
               </div>
-            </div>
+            </div> }
 
             <div className="md:col-span-3">
-                <JobsList search={search}  />
+                <JobsList search={search} category={selectedCategory}  />
             </div>
           </div>
         </div>

@@ -77,6 +77,15 @@ export default function DashboardNav() {
             >
               Payments
             </Link>
+
+            <Link
+              href="/dashboard/applications"
+              className="flex items-center gap-2 text-lg font-medium"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Briefcase className="h-5 w-5" />
+              <span>Applications</span>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -147,6 +156,15 @@ export default function DashboardNav() {
             >
               <User className="h-5 w-5" />
               <span>Profile</span>
+            </Link>
+
+            <Link
+              href="/dashboard/applications"
+              className="flex items-center gap-2 text-lg font-medium"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Briefcase className="h-5 w-5" />
+              <span>Applications</span>
             </Link>
           </nav>
         </div>

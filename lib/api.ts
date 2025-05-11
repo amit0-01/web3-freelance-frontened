@@ -162,25 +162,49 @@ const mockJobs: Job[] = [
 ]
 
 
-export async function getJobs(search?: string) {
+export async function getJobs(search?: string, category?: string) {
   try {
-    const url = search
-      ? `/blockchain/jobs?search=${encodeURIComponent(search)}`
-      : "/blockchain/jobs"
+    const params = new URLSearchParams();
 
-    const response = await axiosInstance.get(url)
-    return response.data
+    if (search) {
+      params.append("search", search);
+    }
+
+    if (category && category.toLowerCase() !== "all") {
+      params.append("category", category);
+    }
+
+    const url = `/blockchain/jobs?${params.toString()}`;
+
+    const response = await axiosInstance.get(url);
+    return response.data;
   } catch (error: any) {
-    console.error("Error fetching jobs:", error)
-    throw error
+    console.error("Error fetching jobs:", error);
+    throw error;
   }
 }
+
 
 export async function getJobDetail(id: string){
   try {
     const response = await axiosInstance.get(`/blockchain/jobs/${id}`)
     return response.data;
   } catch (error) {
+    throw error
+  }
+}
+
+
+export async function getAdminPostedJobs(search? : string){
+  try {
+    const url = search
+      ? `/blockchain/jobs/user-jobs?search=${encodeURIComponent(search)}`
+      : "/blockchain/jobs/user-jobs"
+
+    const response = await axiosInstance.get(url)
+    return response.data
+  } catch (error: any) {
+    console.error("Error fetching jobs:", error)
     throw error
   }
 }

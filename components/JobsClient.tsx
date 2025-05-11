@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { getUserRole } from "@/lib/utils";
 
 interface Job {
   id: number;
@@ -16,7 +17,9 @@ interface Job {
 
 
 export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }) {
-  console.log('role', role);
+
+  const userRole = getUserRole();
+
   if (!jobs.length) {
     return (
       <div className="text-center py-8">
@@ -33,7 +36,7 @@ export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }
     <Card className="col-span-1 md:col-span-2">
       <CardHeader>
         <CardTitle>{role == 'ADMIN' ? 'My Jobs' : 'Recent Jobs'}</CardTitle>
-        <CardDescription>Recently posted jobs that match your skills</CardDescription>
+        <CardDescription>{userRole == 'FREELANCER' ? 'Recently posted jobs that match your skills' : 'Recently Posted Jobs'}</CardDescription>
       </CardHeader>
       <CardContent>
       <div className="md:col-span-3">

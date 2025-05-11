@@ -1,26 +1,35 @@
 "use client";
 import { useEffect, useState } from "react";
 import JobsClient from "./JobsClient";
-import { getJobs } from "@/lib/api";
+import { getAdminPostedJobs, getJobs } from "@/lib/api";
 import { JobsListSkeleton } from "./skeleton";
 import { getUserRole } from "@/lib/utils";
 
 interface JobsListProps {
   search?: string
+  category? : string
 }
 
 
-export default function JobsList({ search }: JobsListProps) {
+export default function JobsList({ search, category }: JobsListProps) {
   const [jobs, setJobs] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState('');
 
+  const userRole = getUserRole();
+  console.log('userrole', userRole);
+  console.log('category', category);
   // FETCH JOBS
   const fetchJobs = async () => {
     setLoading(true)
     try {
-      const response = await getJobs(search)
+      if(userRole=='FREELANCER'){
+      const response = await getJobs(search, category)
       setJobs(response)
+      } else if(userRole == 'ADMIN'){
+        const response = await getAdminPostedJobs(search)
+        setJobs(response)
+      }
     } catch (error) {
       console.error("Failed to fetch jobs:", error)
     } finally {
@@ -37,7 +46,7 @@ export default function JobsList({ search }: JobsListProps) {
 
   useEffect(() => {
     fetchJobs()
-  }, [search])
+  }, [search, category])
   if (loading) return <JobsListSkeleton />
   return <JobsClient jobs={jobs} role={role} />;
 }
