@@ -140,18 +140,26 @@ export default function EmployerApplications() {
               ) : (
                 job.applications.map((app) => (
                   <Card key={app.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <CardTitle className="text-lg">{app.user.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{app.user.email}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Applied on {new Date(app.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge variant={getStatusColor(app.status) as any}>{app.status}</Badge>
-                    </div>
-                  </CardHeader>
+                 <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg">{app.user.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{app.user.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Applied on {new Date(app.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getStatusColor(app.status) as any}>{app.status}</Badge>
+                    {app.status === "ACCEPTED" && (
+                      <Badge className="bg-green-600 hover:bg-green-700 text-white">
+                        Accepted
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
                 
                   <CardContent>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -191,23 +199,27 @@ export default function EmployerApplications() {
                       // ACCEPT/REJECT BUTTONS
                     )}
 
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => handleApplicationStatus(app.id, "ACCEPTED")}
-                      disabled={app.status === "ACCEPTED" || app.status === "REJECTED"}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleApplicationStatus(app.id, "REJECTED")}
-                      disabled={app.status === "ACCEPTED" || app.status === "REJECTED"}
-                    >
-                      Reject
-                    </Button>
+                    {app.status !== "ACCEPTED" && (
+                      <div className="mt-4 flex gap-3">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => handleApplicationStatus(app.id, "ACCEPTED")}
+                          disabled={app.status === "ACCEPTED" || app.status === "REJECTED"}
+                        >
+                          Accept
+                        </Button>
 
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => handleApplicationStatus(app.id, "REJECTED")}
+                          disabled={app.status === "ACCEPTED" || app.status === "REJECTED"}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 

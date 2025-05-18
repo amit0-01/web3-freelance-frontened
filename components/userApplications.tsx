@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import DashboardNav from "@/components/dashboard-nav"
-import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/axiosInstance"
 import { getUserRole } from "@/lib/utils"
+import { completedJob } from "@/services/transactionJobService"
+import { toast } from "react-toastify"
 
 interface JobApplication {
   id: string
@@ -24,7 +25,6 @@ interface JobApplication {
 export default function UserApplications() {
   const [applications, setApplications] = useState<JobApplication[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { toast } = useToast()
 
   const userRole = getUserRole();
   console.log('userrole', userRole);
@@ -34,34 +34,44 @@ export default function UserApplications() {
       const response = await axiosInstance.get("/blockchain/applications/me")
       console.log('response', response)
       if(response.status == 200){
+        toast.success("Applications loaded successfully")
           setApplications(response.data)
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load your applications",
-        variant: "destructive",
-      })
+      toast.error("Failed to load your applications")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const fetchEmployerApplications = async () => {
+  // const fetchEmployerApplications = async () => {
+  //   try {
+  //     const response = await axiosInstance.get("/blockchain/applications/employer")
+  //     console.log('response', response);
+  //     if(response.status == 200){
+  //       toast.success
+  //         setApplications(response.data)
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to load your applications",
+  //       variant: "destructive",
+  //     })
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
+  const handleCompleteJob = async (jobId: number) => {
     try {
-      const response = await axiosInstance.get("/blockchain/applications/employer")
-      console.log('response', response);
-      if(response.status == 200){
-          setApplications(response.data)
+      const response = await completedJob(jobId);
+      if (response.status === 200) {
+        toast.success("Job marked as complete successfully")
+        fetchFreelancerApplications()
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load your applications",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      toast.success("Failed to mark job as complete")
     }
   }
 
@@ -171,6 +181,20 @@ export default function UserApplications() {
                             </Button>
                           </Link>
                         </div>
+                      
+                        {
+                        // application.freelancer?.toLowerCase() === currentUserAddress?.toLowerCase() &&
+                          !application.isCompleted && (
+                            <div className="flex justify-end mt-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleCompleteJob(application.jobId)}
+                              >
+                                Mark as Complete
+                              </Button>
+                            </div>
+                        )}
+
                       </div>
                     </div>
                   </CardContent>
