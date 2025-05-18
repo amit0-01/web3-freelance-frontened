@@ -144,9 +144,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </div>
                 </CardContent>
                 <CardFooter>
+                  { job.freelancer == '0x0000000000000000000000000000000000000000' &&
                   <Button className="w-full" onClick={() => setIsApplyModalOpen(true)}>
                     Apply for this Job
                   </Button>
+                    }
                 </CardFooter>
               </Card>
 
