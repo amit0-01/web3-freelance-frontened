@@ -8,26 +8,16 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import DashboardNav from "@/components/dashboard-nav"
-import { useToast } from "@/hooks/use-toast"
 // import PaymentReleaseModal from "@/components/payment-release-modal"
 import { formatDate } from "@/lib/utils"
+import { getJobReadyToRelease, releasePayment } from "@/services/paymentService"
+import { toast } from "react-toastify"
+import { Payment } from "@/lib/api"
+import ConfirmModal from "@/components/confirmModal"
 
 interface Job {
   id: string
   title: string
-}
-
-interface Payment {
-  id: string
-  amount: number
-  status: "pending" | "completed" | "released" | "disputed"
-  createdAt: string
-  completedAt?: string
-  job: Job
-  freelancerName: string
-  freelancerId: string
-  transactionHash?: string
-  type: "incoming" | "outgoing"
 }
 
 export default function PaymentsPage() {
@@ -38,31 +28,30 @@ export default function PaymentsPage() {
   const [sortBy, setSortBy] = useState("newest")
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [isReleaseModalOpen, setIsReleaseModalOpen] = useState(false)
-  const { toast } = useToast()
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const response = await fetch("/api/payments")
-        if (!response.ok) {
-          throw new Error("Failed to fetch payments")
-        }
-        const data = await response.json()
-        setPayments(data)
-        setFilteredPayments(data)
+        const response = await getJobReadyToRelease()
+        if(response.status == 200) {
+        console.log('response', response.data)
+        setPayments(response.data)
+        setFilteredPayments([...response.data]) // optional deep copy
+        console.log('fileteredPayments', filteredPayments)
+      }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load payments",
-          variant: "destructive",
-        })
+        toast.error("Failed to fetch payments")
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchPayments()
-  }, [toast])
+  }, [])
+
+  useEffect(() => {
+    console.log('filteredPayments updated:', filteredPayments);
+  }, [filteredPayments]);
 
   useEffect(() => {
     // Filter payments based on active tab
@@ -91,43 +80,64 @@ export default function PaymentsPage() {
     setFilteredPayments(filtered)
   }, [payments, activeTab, sortBy])
 
-  const handleReleasePayment = async (paymentId: string) => {
-    try {
-      const response = await fetch(`/api/payments/${paymentId}/release`, {
-        method: "POST",
-      })
+  // const handleReleasePayment = async (paymentId: string) => {
+  //   try {
+  //     const response = await fetch(`/api/payments/${paymentId}/release`, {
+  //       method: "POST",
+  //     })
 
-      if (!response.ok) {
-        throw new Error("Failed to release payment")
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to release payment")
+  //     }
 
-      const updatedPayment = await response.json()
+  //     const updatedPayment = await response.json()
 
-      // Update local state
-      setPayments((prevPayments) =>
-        prevPayments.map((payment) => (payment.id === paymentId ? { ...payment, status: "released" } : payment)),
-      )
+  //     // Update local state
+  //     setPayments((prevPayments) =>
+  //       prevPayments.map((payment) => (payment.id === paymentId ? { ...payment, status: "released" } : payment)),
+  //     )
 
-      toast({
-        title: "Payment released",
-        description: "The payment has been successfully released to the freelancer.",
-      })
+  //     toast({
+  //       title: "Payment released",
+  //       description: "The payment has been successfully released to the freelancer.",
+  //     })
 
-      setIsReleaseModalOpen(false)
-      setSelectedPayment(null)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to release payment",
-        variant: "destructive",
-      })
-    }
-  }
+  //     setIsReleaseModalOpen(false)
+  //     setSelectedPayment(null)
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to release payment",
+  //       variant: "destructive",
+  //     })
+  //   }
+  // }
 
   const openReleaseModal = (payment: Payment) => {
     setSelectedPayment(payment)
     setIsReleaseModalOpen(true)
   }
+
+  const handleConfirmRelease = async () => {
+    if (!selectedPayment) return
+  
+    try {
+      const response = await releasePayment(selectedPayment.id)
+  
+      if (response.status === 200) {
+        toast.success("Payment released successfully")
+        setIsReleaseModalOpen(false)
+        // Optional: trigger a refresh or update state to reflect changes
+      } else {
+        toast.error("Something went wrong while releasing payment")
+        console.error("Unexpected response:", response)
+      }
+    } catch (error: any) {
+      toast.error("Failed to release payment")
+      console.error("Release payment error:", error?.response || error)
+    }
+  }
+  
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -234,80 +244,84 @@ export default function PaymentsPage() {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                      {filteredPayments.map((payment) => (
-                        <Card key={payment.id} className="overflow-hidden">
-                          <CardContent className="p-0">
-                            <div className="flex flex-col md:flex-row">
-                              <div
-                                className={`w-1 md:w-2 flex-shrink-0 ${
-                                  payment.type === "incoming" ? "bg-green-500" : "bg-blue-500"
-                                }`}
-                              ></div>
-                              <div className="p-6 flex-grow">
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <h3 className="font-semibold">
-                                        <Link href={`/jobs/${payment.job.id}`} className="hover:underline">
-                                          {payment.job.title}
-                                        </Link>
-                                      </h3>
-                                      {getStatusBadge(payment.status)}
-                                    </div>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                      {payment.type === "incoming"
-                                        ? "Payment from client"
-                                        : `Payment to ${payment.freelancerName}`}
-                                    </p>
+                    {payments.map((payment) => (
+                      <Card key={payment.id || Math.random()} className="overflow-hidden">
+                        <CardContent className="p-0">
+                          <div className="flex flex-col md:flex-row">
+                            <div
+                              className={`w-1 md:w-2 flex-shrink-0 ${
+                                payment.type === "incoming" ? "bg-green-500" : "bg-blue-500"
+                              }`}
+                            ></div>
+                            <div className="p-6 flex-grow">
+                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold">
+                                      <Link href={`/jobs/${payment.id || ''}`} className="hover:underline">
+                                        {payment.title || '--'}
+                                      </Link>
+                                    </h3>
+                                    {/* {getStatusBadge(payment.status)} */}
                                   </div>
-                                  <div className="text-right">
-                                    <div className="font-bold text-lg">{payment.amount.toFixed(2)} ETH</div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Created: {formatDate(payment.createdAt)}
-                                    </div>
-                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {payment.type === "incoming"
+                                      ? "Payment from client"
+                                      : `Payment to ${payment.freelancer?.name || '--'}`}
+                                  </p>
                                 </div>
-  
-                                <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                  {payment.transactionHash && (
-                                    <div className="text-sm">
-                                      <span className="text-muted-foreground">Tx: </span>
-                                      <a
-                                        href={`https://etherscan.io/tx/${payment.transactionHash}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
-                                      >
-                                        {payment.transactionHash.substring(0, 10)}...
-                                        {payment.transactionHash.substring(payment.transactionHash.length - 8)}
-                                      </a>
-                                    </div>
-                                  )}
-  
-                                  <div className="flex gap-2 md:ml-auto">
-                                    <Link href={`/jobs/${payment.job.id}`}>
-                                      <Button variant="outline" size="sm">
-                                        View Job
-                                      </Button>
-                                    </Link>
-                                    {payment.status === "completed" && payment.type === "outgoing" && (
-                                      <Button size="sm" onClick={() => openReleaseModal(payment)}>
-                                        Release Payment
-                                      </Button>
-                                    )}
-                                    {payment.status === "pending" && payment.type === "outgoing" && (
-                                      <Button size="sm" variant="outline" disabled>
-                                        Awaiting Completion
-                                      </Button>
-                                    )}
+                                <div className="text-right">
+                                  <div className="font-bold text-lg">
+                                    {(payment.payment ?? 0)} ETH
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Created: {formatDate(payment.createdAt || '')}
                                   </div>
                                 </div>
                               </div>
+                  
+                              <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                {payment.transactionHash && (
+                                  <div className="text-sm">
+                                    <span className="text-muted-foreground">Tx: </span>
+                                    <a
+                                      href={`https://etherscan.io/tx/${payment.transactionHash}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline"
+                                    >
+                                      {payment.transactionHash.substring(0, 10)}...
+                                      {payment.transactionHash.substring(payment.transactionHash.length - 8)}
+                                    </a>
+                                  </div>
+                                )}
+                  
+                                <div className="flex gap-2 md:ml-auto">
+                                  <Link href={`/jobs/${payment.job?.id || ''}`}>
+                                    <Button variant="outline" size="sm">
+                                      View Job
+                                    </Button>
+                                  </Link>
+                                  
+                                  {/* {payment.status === "completed" && payment.type === "outgoing" && ( */}
+                                    <Button size="sm" onClick={() => openReleaseModal(payment)}>
+                                      Release Payment
+                                    </Button>
+                                  {/* )}  */}
+                                 
+                                  {payment.status === "pending" && payment.type === "outgoing" && (
+                                    <Button size="sm" variant="outline" disabled>
+                                      Awaiting Completion
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                   )}
                 </TabsContent>
               </Tabs>
@@ -315,6 +329,14 @@ export default function PaymentsPage() {
           </div>
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={isReleaseModalOpen}
+        title="Release Payment"
+        message="Are you sure you want to release this payment? This action is irreversible."
+        onConfirm={handleConfirmRelease}
+        onCancel={() => setIsReleaseModalOpen(false)}
+      />
     </div>
   )
   

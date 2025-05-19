@@ -30,6 +30,26 @@ export interface Job {
   status: string
 }
 
+export interface Payment {
+  id: number;
+  title: string;
+  description: string;
+  payment: number;
+  createdAt: string; // ISO date string
+  transactionHash?: string;
+  type: 'incoming' | 'outgoing';
+  status: 'pending' | 'completed';
+  job: {
+    id: number;
+    title?: string;
+  };
+  freelancer: {
+    id: number;
+    name: string;
+  };
+}
+
+
 
 const mockClients: Client[] = [
   {
