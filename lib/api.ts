@@ -38,7 +38,7 @@ export interface Payment {
   createdAt: string; // ISO date string
   transactionHash?: string;
   type: 'incoming' | 'outgoing';
-  status: 'pending' | 'completed';
+  status: 'pending' | 'completed' | 'ready_to_release';
   job: {
     id: number;
     title?: string;

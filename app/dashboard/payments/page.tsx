@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DashboardNav from "@/components/dashboard-nav"
 // import PaymentReleaseModal from "@/components/payment-release-modal"
 import { formatDate } from "@/lib/utils"
-import { getJobReadyToRelease, releasePayment } from "@/services/paymentService"
+import { getPayments, releasePayment } from "@/services/paymentService"
 import { toast } from "react-toastify"
 import { Payment } from "@/lib/api"
 import ConfirmModal from "@/components/confirmModal"
@@ -32,11 +32,11 @@ export default function PaymentsPage() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const response = await getJobReadyToRelease()
+        const response = await getPayments(activeTab)
         if(response.status == 200) {
         console.log('response', response.data)
         setPayments(response.data)
-        setFilteredPayments([...response.data]) // optional deep copy
+        setFilteredPayments([...response.data]) 
         console.log('fileteredPayments', filteredPayments)
       }
       } catch (error) {
@@ -47,7 +47,7 @@ export default function PaymentsPage() {
     }
 
     fetchPayments()
-  }, [])
+  }, [activeTab])
 
   useEffect(() => {
     console.log('filteredPayments updated:', filteredPayments);
@@ -122,9 +122,9 @@ export default function PaymentsPage() {
     if (!selectedPayment) return
   
     try {
-      const response = await releasePayment(selectedPayment.id)
+      const response:any = await releasePayment(selectedPayment.job.id)
   
-      if (response.status === 200) {
+      if (response.success) {
         toast.success("Payment released successfully")
         setIsReleaseModalOpen(false)
         // Optional: trigger a refresh or update state to reflect changes
@@ -143,7 +143,7 @@ export default function PaymentsPage() {
     switch (status) {
       case "pending":
         return <Badge variant="outline">Pending</Badge>
-      case "completed":
+      case "ready_to_release":
         return <Badge variant="secondary">Ready to Release</Badge>
       case "released":
         return <Badge variant="default">Released</Badge>
@@ -232,7 +232,7 @@ export default function PaymentsPage() {
                 <TabsList>
                   <TabsTrigger value="all">All</TabsTrigger>
                   <TabsTrigger value="pending">Pending</TabsTrigger>
-                  <TabsTrigger value="completed">Ready to Release</TabsTrigger>
+                  <TabsTrigger value="ready_to_release">Ready to Release</TabsTrigger>
                   <TabsTrigger value="released">Released</TabsTrigger>
                 </TabsList>
                 <TabsContent value={activeTab} className="mt-6">
@@ -259,10 +259,10 @@ export default function PaymentsPage() {
                                   <div className="flex items-center gap-2">
                                     <h3 className="font-semibold">
                                       <Link href={`/jobs/${payment.id || ''}`} className="hover:underline">
-                                        {payment.title || '--'}
+                                        {payment.job.title || '--'}
                                       </Link>
                                     </h3>
-                                    {/* {getStatusBadge(payment.status)} */}
+                                    {getStatusBadge(payment.status)}
                                   </div>
                                   <p className="text-sm text-muted-foreground mt-1">
                                     {payment.type === "incoming"
@@ -272,7 +272,7 @@ export default function PaymentsPage() {
                                 </div>
                                 <div className="text-right">
                                   <div className="font-bold text-lg">
-                                    {(payment.payment ?? 0)} ETH
+                                    {(payment.amount ?? 0)} ETH
                                   </div>
                                   <div className="text-sm text-muted-foreground">
                                     Created: {formatDate(payment.createdAt || '')}
@@ -303,11 +303,11 @@ export default function PaymentsPage() {
                                     </Button>
                                   </Link>
                                   
-                                  {/* {payment.status === "completed" && payment.type === "outgoing" && ( */}
+                                  {payment.status === "ready_to_release" && (
                                     <Button size="sm" onClick={() => openReleaseModal(payment)}>
                                       Release Payment
-                                    </Button>
-                                  {/* )}  */}
+                                    </Button>)
+                                  }
                                  
                                   {payment.status === "pending" && payment.type === "outgoing" && (
                                     <Button size="sm" variant="outline" disabled>

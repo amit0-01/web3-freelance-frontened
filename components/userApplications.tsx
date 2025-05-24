@@ -184,7 +184,7 @@ export default function UserApplications() {
                       
                         {
                         // application.freelancer?.toLowerCase() === currentUserAddress?.toLowerCase() &&
-                          !application.job.isCompleted && (
+                          !application.job.isCompleted && application.status == 'ACCEPTED' && (
                             <div className="flex justify-end mt-2">
                               <Button
                                 size="sm"
