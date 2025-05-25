@@ -23,8 +23,8 @@ export default function DashboardNav() {
 
 
   const isActive = (path: string) => {
-    return pathname === path || pathname?.startsWith(`${path}/`)
-  }
+    return pathname === path;
+  }  
 
   const handleLogout = ()=>{
     Cookies.remove("token");
@@ -80,11 +80,12 @@ export default function DashboardNav() {
 
             <Link
               href="/dashboard/applications"
-              className="flex items-center gap-2 text-lg font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
+              className={`text-sm font-medium ${
+                isActive("/dashboard/applications") ? "text-foreground" : "text-muted-foreground"
+              } transition-colors hover:text-foreground`}
             >
-              <Briefcase className="h-5 w-5" />
-              <span>Applications</span>
+              {/* <Briefcase className="h-5 w-5" /> */}
+              Applications
             </Link>
           </nav>
 
