@@ -4,5 +4,5 @@ export async function changeApplicationStatus(
   jobId: number,
   status: string,
 ) {
-  return await axiosInstance.patch(`blockchain/${jobId}/status`,{ status })
+  return await axiosInstance.post(`blockchain/${jobId}/status`,{ status })
 }

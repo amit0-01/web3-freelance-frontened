@@ -1,5 +1,11 @@
 "use client"
 
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -8,8 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import DashboardNav from "@/components/dashboard-nav"
 import axiosInstance from "@/lib/axiosInstance"
 import { getUserRole } from "@/lib/utils"
-import { completedJob } from "@/services/transactionJobService"
 import { toast } from "react-toastify"
+import { ethers } from "ethers"
 
 interface JobApplication {
   id: string
@@ -63,17 +69,65 @@ export default function UserApplications() {
   //   }
   // }
 
-  const handleCompleteJob = async (jobId: number) => {
-    try {
-      const response = await completedJob(jobId);
-      if (response.status === 200) {
-        toast.success("Job marked as complete successfully")
-        fetchFreelancerApplications()
-      }
-    } catch (error) {
-      toast.success("Failed to mark job as complete")
+const CONTRACT_ADDRESS:any = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS; // or hardcoded if needed
+const ContractABI = JSON.parse(process.env.NEXT_PUBLIC_CONTRACT_ABI || "[]"); // Ensure ABI is available
+console.log("Contract Address:", CONTRACT_ADDRESS);
+console.log("Contract ABI:", ContractABI);
+
+
+const handleCompleteJob = async (jobId: number) => {
+  console.log("Completing job with ID:", jobId);
+
+  try {
+    if (!window.ethereum) {
+      console.error("No window.ethereum");
+      return toast.error("Please install MetaMask");
     }
+
+    // 1) Request account access if needed
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    console.log("✅ MetaMask account access granted");
+    console.log('this is woring')
+
+    // 2) Create a provider & signer
+    //    If you're on ethers v6: ethers.BrowserProvider
+    //    If you're on v5: ethers.providers.Web3Provider
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    console.log("✅ Provider created:", provider);
+
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+    console.log("✅ Signer address:", userAddress);
+
+    // 3) Instantiate your contract with that signer
+    const contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      ContractABI,
+      signer
+    );
+    console.log("✅ Contract instance:", contract);
+
+    // 4) Call the on-chain function (this will now prompt MetaMask!)
+    const tx = await contract.completeJob(jobId);
+    console.log("⏳ Transaction sent, waiting for confirmation...", tx);
+    await tx.wait();
+    console.log("🎉 Transaction confirmed!", tx);
+
+    // 5) Only now call your backend to update the DB
+    const response = await axiosInstance.post(`/blockchain/jobs/${jobId}/complete`);
+    if (response.status === 200) {
+      toast.success("Job marked as complete");
+      fetchFreelancerApplications();
+    } else {
+      toast.error("Failed to update backend");
+    }
+
+  } catch (error: any) {
+    console.error("❌ Error in handleCompleteJob:", error);
+    toast.error("Failed to complete job");
   }
+};
+
 
   useEffect(() => {
     if(userRole == 'FREELANCER'){
