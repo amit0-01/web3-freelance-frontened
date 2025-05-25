@@ -124,7 +124,7 @@ export default function PaymentsPage() {
     try {
       const response:any = await releasePayment(selectedPayment.job.id)
   
-      if (response.success) {
+      if (response.data.success) {
         toast.success("Payment released successfully")
         setIsReleaseModalOpen(false)
         // Optional: trigger a refresh or update state to reflect changes
