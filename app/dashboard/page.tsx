@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
-import { Skeleton } from "@/components/ui/skeleton"
 import WalletBalanceCard from "@/components/walletBalanceCard"; // Move balance fetching to a client component
+import { getUserRole } from "@/lib/utils"
+import ActiveJobsCard from "@/components/active-job-cards"
 
 
 export default function DashboardPage() {
-
+  
+    
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardNav />
@@ -26,22 +28,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Active Jobs</CardTitle>
-                <CardDescription>Jobs you've posted or applied to</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">12</div>
-              </CardContent>
-              <CardFooter>
-                <Link href="/dashboard/jobs">
-                  <Button variant="ghost" className="h-8 px-2 text-sm">
-                    View all
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
+           <ActiveJobsCard/>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle>Pending Payments</CardTitle>
