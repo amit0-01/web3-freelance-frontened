@@ -114,8 +114,8 @@ const handleCompleteJob = async (jobId: number) => {
     console.log("🎉 Transaction confirmed!", tx);
 
     // 5) Only now call your backend to update the DB
-    const response = await axiosInstance.post(`/blockchain/jobs/${jobId}/complete`);
-    if (response.status === 200) {
+    const response:any = await axiosInstance.post(`/blockchain/jobs/${jobId}/complete`);
+    if (response.success) {
       toast.success("Job marked as complete");
       fetchFreelancerApplications();
     } else {
