@@ -21,60 +21,68 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { participant, messages, jobId, jobTitle } = conversation
+  const { participant, jobIds, jobTitle } = conversation
+  const [messages, setMessages] = useState<{ id: string; senderId: string; content: string; createdAt: string; attachment?: { name: string } }[]>(conversation.messages || []);
+
 
   // console.log('getUserDetails', getUserDetails())
 
 
   useEffect(() => {
     // Listen to incoming messages
-    socket.on('receiveMessage', (message) => {
-      console.log('message', message)
-      console.log('conversation', conversation)
-      // setMessages((prev) => [...prev, message]);
-    });
-
-    // Typing indicator
-    socket.on('typing', (userId) => {
-      console.log('userid', userId);
+    const handleReceiveMessage = (message: { id: string; senderId: string; content: string; createdAt: string; attachment?: { name: string } }) => {
+      console.log("Received message:", message);
+      setMessages((prev: typeof messages) => [...prev, message]); // ✅ Trigger re-render
+    };
+  
+    const handleTyping = (userId: string) => {
+      console.log("Typing userId:", userId);
       // setTypingUser(userId);
       // setTimeout(() => setTypingUser(null), 3000);
-    });
-
-    // User connected
-    socket.on('userConnected', (user) => {
-      console.log('User connected:', user);
-    });
-
-    // User disconnected
-    socket.on('userDisconnected', (userId) => {
-      console.log('User disconnected:', userId);
-    });
-
+    };
+  
+    const handleUserConnected = (user: any) => {
+      console.log("User connected:", user);
+    };
+  
+    const handleUserDisconnected = (userId: string) => {
+      console.log("User disconnected:", userId);
+    };
+  
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("typing", handleTyping);
+    socket.on("userConnected", handleUserConnected);
+    socket.on("userDisconnected", handleUserDisconnected);
+  
     // Cleanup on component unmount
     return () => {
-      socket.off('receiveMessage');
-      socket.off('typing');
-      socket.off('userConnected');
-      socket.off('userDisconnected');
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("typing", handleTyping);
+      socket.off("userConnected", handleUserConnected);
+      socket.off("userDisconnected", handleUserDisconnected);
     };
   }, []);
 
   useEffect(() => {
-    if (conversation?.jobId) {
-      joinRoom(conversation.jobId);
+    if (conversation?.jobIds) {
+      const roomId = conversation.jobIds[0];
+      joinRoom(roomId);
+      console.log('joined room', roomId);
+  
+      const handleChatHistory = (history: typeof messages) => {
+        console.log('histor', history)
+        console.log('conversation', conversation)
+        setMessages(history); 
+      };
+  
+      socket.on("chatHistory", handleChatHistory);
+  
+      return () => {
+        socket.off("chatHistory", handleChatHistory);
+      };
     }
+  }, [conversation?.jobIds]);
   
-    onReceiveMessage((data) => {
-      // console.log('receinvemessage', data);
-      // console.log("conversation:", conversation);
-      // Optionally update local state here
-    });
-  
-    return () => {
-      offReceiveMessage();
-    };
-  }, [conversation?.jobId]);
 
   useEffect(() => {
     scrollToBottom()
@@ -86,16 +94,24 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isSubmitting) return;
+  
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || isSubmitting) return;
   
     setIsSubmitting(true);
+  
     try {
-      sendMessage(conversation.jobId, getUserDetails().id, message);
+      const userId = getUserDetails().id;
+      console.log('conversation', conversation);
+      await sendMessage(conversation.jobIds[0],conversation.participant.id, userId, trimmedMessage);
       setMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <div className="flex-1 flex flex-col">
@@ -115,7 +131,7 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
           <div>
             <h3 className="font-medium">{participant.name}</h3>
             <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <Link href={`/jobs/${jobId}`} className="hover:underline flex items-center">
+              <Link href={`/jobs/${jobIds[0]}`} className="hover:underline flex items-center">
                 {jobTitle} <ExternalLink className="h-3 w-3 ml-1" />
               </Link>
             </div>
@@ -166,6 +182,7 @@ interface MessageProps {
 }
 
 function Message({ message, isOwn }: MessageProps) {
+  console.log('belowmessage', message)
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div

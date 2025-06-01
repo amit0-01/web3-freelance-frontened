@@ -23,8 +23,9 @@ export const joinRoom = (roomId: string) => {
     socket.emit('joinRoom', { roomId });
   };
   
-export const sendMessage = (roomId: string, sender: string, message: string) => {
-socket.emit('sendMessage', { roomId, sender, message });
+export const sendMessage = (roomId: string,receiverId:string, senderId: string, message: string) => {
+  console.log(roomId, receiverId, senderId, message)
+socket.emit('sendMessage', { roomId,receiverId, senderId, message });
 };
 
 export const onReceiveMessage = (cb: (data: any) => void) => {

@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 import DashboardNav from "@/components/dashboard-nav"
 import ChatSidebar from "@/components/chat/chat-sidebar"
 import ChatWindow from "@/components/chat/chat-window"
-import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { toast } from "react-toastify"
+import { getUsers } from "@/services/chatService"
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState<any[]>([])
@@ -15,18 +16,13 @@ export default function MessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const conversationId = searchParams.get("id")
-  const { toast } = useToast()
 
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await fetch("/api/conversations")
-        console.log('response', response)
-        if (!response.ok) {
-          throw new Error("Failed to fetch conversations")
-        }
-        const data = await response.json()
-        console.log('data',data)
+        const response = await getUsers();
+        const data = response?.data
+        console.log("response", response);
         setConversations(data)
 
         // If there's a conversation ID in the URL, set it as active
@@ -41,11 +37,7 @@ export default function MessagesPage() {
           setActiveConversation(data[0])
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load conversations",
-          variant: "destructive",
-        })
+        toast.error("Error getting conversation")
       } finally {
         setIsLoading(false)
       }
@@ -119,11 +111,7 @@ export default function MessagesPage() {
         ),
       )
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      })
+      toast.error('Error')
     }
   }
 
