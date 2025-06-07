@@ -29,34 +29,37 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
 
 
   useEffect(() => {
-    // Listen to incoming messages
-    const handleReceiveMessage = (message: { id: string; senderId: string; content: string; createdAt: string; attachment?: { name: string } }) => {
-      console.log("Received message:", message);
-      setMessages((prev: typeof messages) => [...prev, message]); // ✅ Trigger re-render
+    if (!socket.connected) {
+      socket.connect();
+    }
+    const handleReceiveMessage = (message:any) => {
+      console.log("📩 Received message:", message);
+      setMessages((prev) => [...prev, message]);
     };
   
     const handleTyping = (userId: string) => {
-      console.log("Typing userId:", userId);
-      // setTypingUser(userId);
-      // setTimeout(() => setTypingUser(null), 3000);
+      console.log("✍️ Typing userId:", userId);
     };
   
     const handleUserConnected = (user: any) => {
-      console.log("User connected:", user);
+      console.log("🔌 User connected:", user);
     };
   
     const handleUserDisconnected = (userId: string) => {
-      console.log("User disconnected:", userId);
+      console.log("🔌 User disconnected:", userId);
     };
   
-    socket.on("receiveMessage", handleReceiveMessage);
+    // Set up listeners
+    socket.on("receiveMessage",handleReceiveMessage);
     socket.on("typing", handleTyping);
     socket.on("userConnected", handleUserConnected);
     socket.on("userDisconnected", handleUserDisconnected);
-  
-    // Cleanup on component unmount
+      socket.onAny((event, ...args) => {
+        console.log("🔍 Any socket event:", event, args);
+      });
+    // Cleanup listeners on unmount
     return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
+      offReceiveMessage();
       socket.off("typing", handleTyping);
       socket.off("userConnected", handleUserConnected);
       socket.off("userDisconnected", handleUserDisconnected);
@@ -66,8 +69,8 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
   useEffect(() => {
     if (conversation?.jobIds) {
       const roomId = conversation.jobIds[0];
-      joinRoom(roomId);
-      console.log('joined room', roomId);
+      joinRoom(String(roomId));
+      console.log('joined room', String(roomId));
   
       const handleChatHistory = (history: typeof messages) => {
         console.log('histor', history)
@@ -102,8 +105,7 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
   
     try {
       const userId = getUserDetails().id;
-      console.log('conversation', conversation);
-      await sendMessage(conversation.jobIds[0],conversation.participant.id, userId, trimmedMessage);
+      sendMessage(conversation.jobIds[0], conversation.participant.id, userId, trimmedMessage);
       setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -149,7 +151,7 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
               <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            messages.map((msg: any) => <Message key={msg.id} message={msg} isOwn={msg.senderId !== participant.id} />)
+            messages.map((msg: any, index:number) => <Message key={`${msg.id}-${index}`} message={msg} isOwn={msg.senderId !== participant.id} />)
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -182,7 +184,6 @@ interface MessageProps {
 }
 
 function Message({ message, isOwn }: MessageProps) {
-  console.log('belowmessage', message)
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div
