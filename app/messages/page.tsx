@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import DashboardNav from "@/components/dashboard-nav"
 import ChatSidebar from "@/components/chat/chat-sidebar"
 import ChatWindow from "@/components/chat/chat-window"
-import { Loader2 } from "lucide-react"
+import { Loader2, MessageSquare } from "lucide-react"
 import { toast } from "react-toastify"
 import { getUsers } from "@/services/chatService"
 
@@ -127,27 +127,41 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <DashboardNav />
-      <main className="flex-1 flex">
+<div className="flex flex-col min-h-screen">
+  <DashboardNav />
+
+  <main className="flex flex-1 overflow-hidden">
+    {/* Sidebar */}
+    <div className="w-[320px] border-r flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         <ChatSidebar
           conversations={conversations}
           activeConversationId={activeConversation?.id}
           onSelectConversation={handleSelectConversation}
         />
-        {activeConversation ? (
-          <ChatWindow conversation={activeConversation} onSendMessage={handleSendMessage} />
-        ) : (
-          <div className="flex-1 flex items-center justify-center bg-muted/20">
-            <div className="text-center">
-              <h3 className="text-lg font-medium">No conversations yet</h3>
-              <p className="text-muted-foreground">
-                When you apply for jobs or hire freelancers, your conversations will appear here.
-              </p>
-            </div>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
+
+    {/* Chat window */}
+    <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
+      {activeConversation ? (
+        <ChatWindow
+          conversation={activeConversation}
+          onSendMessage={handleSendMessage}
+        />
+      ) : (
+        <div className="flex-1 flex items-center justify-center overflow-y-auto">
+          <div className="text-center p-6">
+            <h3 className="text-lg font-medium">No conversations yet</h3>
+            <p className="text-muted-foreground">
+              When you apply for jobs or hire freelancers, your conversations will appear here.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  </main>
+</div>
+
   )
 }

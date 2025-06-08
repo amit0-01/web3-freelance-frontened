@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Home, Briefcase, Wallet, Bell, User, Menu, X, LogOut, MessageSquare } from "lucide-react"
+import { Logout } from "@/services/auth.service"
 
 export default function DashboardNav() {
   const pathname = usePathname()
@@ -20,6 +21,11 @@ export default function DashboardNav() {
 
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(`${path}/`)
+  }
+
+  const handleLogout = () => {
+    // Implement your logout logic here
+    Logout()
   }
 
   return (
@@ -115,7 +121,7 @@ export default function DashboardNav() {
                   <Link href="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-500">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

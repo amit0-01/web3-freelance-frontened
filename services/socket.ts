@@ -19,6 +19,10 @@ socket.on('receiveMessage', (data) => {
   console.log("📩 Received message:", data);
 });
 
+socket.on('typing', (data) => {
+  console.log("✍️ Typing:", data);
+});
+
 export const joinRoom = (roomId: string) => {
   socket.emit("joinRoom", { roomId });
 };
