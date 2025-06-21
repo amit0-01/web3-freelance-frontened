@@ -1,3 +1,5 @@
+import { LoginPayload } from "@/lib/auth.interface";
+import axiosInstance from "@/lib/axiosInstance";
 
 export const Logout = async () => {
     try {
@@ -10,3 +12,13 @@ export const Logout = async () => {
         console.error("Logout failed:", error);
     }
     }
+    
+export const register = async ({ name, email, password, walletAddress, role }: LoginPayload) => {
+    return axiosInstance.post("/auth/register", {
+        name,
+        email,
+        password,
+        walletAddress,
+        role
+    });
+}

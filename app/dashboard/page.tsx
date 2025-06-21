@@ -1,12 +1,12 @@
-import { Suspense, useEffect } from "react"
+import { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
-import WalletBalanceCard from "@/components/walletBalanceCard"; // Move balance fetching to a client component
-import { getUserRole } from "@/lib/utils"
+import WalletBalanceCard from "@/components/walletBalanceCard"; 
 import ActiveJobsCard from "@/components/active-job-cards"
+import PostJobButton from "@/components/PostJobButton"
 
 
 export default function DashboardPage() {
@@ -22,9 +22,7 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
               <p className="text-muted-foreground">Welcome to your Web3Jobs dashboard.</p>
             </div>
-            <Link href="/jobs/post">
-              <Button>Post a New Job</Button>
-            </Link>
+            <PostJobButton/>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

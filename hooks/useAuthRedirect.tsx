@@ -8,7 +8,7 @@ export const useAuthRedirect = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    const publicRoutes = ["/", "/auth/login", "/auth/register", "/about"];
+    const publicRoutes = ["/", "/auth/login", "/auth/register", "/about", "/auth/join"];
 
     if (publicRoutes.includes(pathname)) {
       console.log("Public route detected. Skipping auth check.");

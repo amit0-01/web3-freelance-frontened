@@ -14,8 +14,6 @@ interface Job {
   category: string;
 }
 
-
-
 export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }) {
 
   const userRole = getUserRole();
@@ -27,9 +25,6 @@ export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }
       </div>
     );
   }
-
-
-
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -68,8 +63,6 @@ export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }
      </Link>
    </CardFooter>
  </Card>
- 
-   
     ))}
   </div>
 

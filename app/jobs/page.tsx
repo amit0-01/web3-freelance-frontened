@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DashboardNav from "@/components/dashboard-nav"
 import JobsList from "@/components/jobs-list"
 import { getUserRole } from "@/lib/utils"
+import PostJobButton from "@/components/PostJobButton"
 
 export default function JobsPage() {
   const [search, setSearch] = useState("")
@@ -26,9 +27,7 @@ export default function JobsPage() {
               <h1 className="text-3xl font-bold tracking-tight">Browse Jobs</h1>
               <p className="text-muted-foreground">Find your next opportunity in the Web3 space</p>
             </div>
-            <Link href="/jobs/post">
-              <Button>Post a New Job</Button>
-            </Link>
+            <PostJobButton/>
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">

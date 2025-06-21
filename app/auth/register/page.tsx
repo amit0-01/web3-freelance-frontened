@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import {register } from "@/services/auth.service"
+import { toast } from "react-toastify"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
@@ -17,37 +18,31 @@ export default function RegisterPage() {
   const [walletAddress, setWalletAddress] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
+  const [role, setRole] = useState<"CLIENT" | "FREELANCER">("CLIENT");
+  const searchParams = useSearchParams();
+  const queryRole = searchParams.get("role") as "CLIENT" | "FREELANCER" | null;
+
+    useEffect(() => {
+      if (queryRole === "CLIENT" || queryRole === "FREELANCER") {
+        setRole(queryRole);
+      }
+    }, [queryRole]);
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password, walletAddress }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Registration failed")
-      }
-
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created successfully.",
-      })
-
+     const respose = await register({name, email, password, walletAddress, role})
+     if(respose.status==201){
       router.push("/auth/login")
+      toast.success("Registration successful! Please log in.")
+     }
     } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: "Please check your information and try again.",
-        variant: "destructive",
-      })
+      console.error("Registration error:", error)
+      toast.error("Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }

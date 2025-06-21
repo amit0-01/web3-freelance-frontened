@@ -65,7 +65,7 @@ export default function DashboardNav() {
               Jobs
             </Link>
             <Link
-              href="/dashboard/payments"
+              href="/payments"
               className={`text-sm font-medium ${
                 isActive("/dashboard/payments") ? "text-foreground" : "text-muted-foreground"
               } transition-colors hover:text-foreground`}
@@ -73,7 +73,7 @@ export default function DashboardNav() {
               Payments
             </Link>
             <Link
-              href="/dashboard/applications"
+              href="/applications"
               className={`text-sm font-medium ${
                 isActive("/dashboard/applications") ? "text-foreground" : "text-muted-foreground"
               } transition-colors hover:text-foreground`}

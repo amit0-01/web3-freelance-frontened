@@ -72,7 +72,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
             <div className="flex gap-2">
               <Button variant="outline">Share</Button>
+              { job.freelancer == '0x0000000000000000000000000000000000000000' &&
               <Button onClick={() => setIsApplyModalOpen(true)}>Apply Now</Button>
+}
             </div>
           </div>
 
