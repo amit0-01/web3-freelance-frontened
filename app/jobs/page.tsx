@@ -27,7 +27,9 @@ export default function JobsPage() {
               <h1 className="text-3xl font-bold tracking-tight">Browse Jobs</h1>
               <p className="text-muted-foreground">Find your next opportunity in the Web3 space</p>
             </div>
+            <Suspense fallback={<div>Loading...</div>}>
             <PostJobButton/>
+            </Suspense>
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">
