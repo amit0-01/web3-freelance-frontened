@@ -19,7 +19,6 @@ export default function ActiveJobsCard() {
     const role = getUserRole()
     const result = await fetchActiveJobsCount(role)
     setCount(result.data.length)
-    console.log('Active Jobs Count:', result.data.length)
   }
 
   return (

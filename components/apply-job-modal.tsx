@@ -37,11 +37,6 @@ export default function ApplyJobModal({ job, isOpen, onClose }: ApplyJobModalPro
   const [portfolioLink, setPortfolioLink] = useState("")
   const params = useParams();
 
-  useEffect(()=>{
-    console.log('pars', params.id);
-  })
-
-
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   setIsSubmitting(true)
@@ -54,7 +49,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       estimatedDuration,
       portfolioLink,
     }
-    console.log('applicationdata', applicationData)
     // Submit via Axios instance
     await axiosInstance.post(`blockchain/jobs/${params.id}/apply`, applicationData)
     toast.success("Application submitted successfully");
@@ -65,7 +59,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     setEstimatedDuration("")
     setPortfolioLink("")
   } catch (error:any) {
-    console.log('error', error) 
     toast.error(error.response.data.message || "Failed to submit application")
   } finally {
     setIsSubmitting(false)

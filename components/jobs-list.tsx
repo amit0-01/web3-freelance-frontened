@@ -17,8 +17,6 @@ export default function JobsList({ search, category }: JobsListProps) {
   const [role, setRole] = useState('');
 
   const userRole = getUserRole();
-  console.log('userrole', userRole);
-  console.log('category', category);
   // FETCH JOBS
   const fetchJobs = async () => {
     setLoading(true)
@@ -40,7 +38,6 @@ export default function JobsList({ search, category }: JobsListProps) {
 
   useEffect(() => {
     const role = getUserRole();
-    console.log('role', role);
     setRole(role);
   }, []);
 

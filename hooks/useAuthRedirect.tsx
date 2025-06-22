@@ -11,7 +11,6 @@ export const useAuthRedirect = () => {
     const publicRoutes = ["/", "/auth/login", "/auth/register", "/about", "/auth/join"];
 
     if (publicRoutes.includes(pathname)) {
-      console.log("Public route detected. Skipping auth check.");
       return;
     }
 

@@ -22,7 +22,6 @@ export default function MessagesPage() {
       try {
         const response = await getUsers();
         const data = response?.data
-        console.log("response", response);
         setConversations(data)
 
         // If there's a conversation ID in the URL, set it as active

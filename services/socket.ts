@@ -5,7 +5,6 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
   transports: ["websocket"],
 });
 
-console.log("Initial socket.connected:", socket.connected);
 
 socket.on("connect", () => {
   console.log("✅ Socket connected:", socket.id);

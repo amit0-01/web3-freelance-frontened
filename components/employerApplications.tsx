@@ -46,7 +46,6 @@ export default function EmployerApplications() {
     try {
       const response = await axiosInstance.get("/blockchain/applications/employer")
       if (response.status === 200) {
-        console.log('response', response.data)
         setJobs(response.data)
       }
     } catch (error) {
@@ -58,7 +57,6 @@ export default function EmployerApplications() {
 
   useEffect(() => {
     fetchEmployerApplications()
-    console.log('jobs', jobs)
   }, [toast])
 
   const getStatusColor = (status: string) => {
@@ -151,11 +149,6 @@ export default function EmployerApplications() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={getStatusColor(app.status) as any}>{app.status}</Badge>
-                    {app.status === "ACCEPTED" && (
-                      <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                        Accepted
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </CardHeader>

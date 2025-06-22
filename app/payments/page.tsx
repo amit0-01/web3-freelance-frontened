@@ -29,23 +29,23 @@ export default function PaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [isReleaseModalOpen, setIsReleaseModalOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        const response = await getPayments(activeTab)
-        if(response.status == 200) {
+  const fetchPayments = async () => {
+    try {
+      const response = await getPayments(activeTab)
+      if(response.status == 200) {
         console.log('response', response.data)
         setPayments(response.data)
         setFilteredPayments([...response.data]) 
         console.log('fileteredPayments', filteredPayments)
       }
-      } catch (error) {
-        toast.error("Failed to fetch payments")
-      } finally {
-        setIsLoading(false)
-      }
+    } catch (error) {
+      toast.error("Failed to fetch payments")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchPayments()
   }, [activeTab])
 
@@ -127,6 +127,7 @@ export default function PaymentsPage() {
       if (response.data.success) {
         toast.success("Payment released successfully")
         setIsReleaseModalOpen(false)
+        fetchPayments() 
         // Optional: trigger a refresh or update state to reflect changes
       } else {
         toast.error("Something went wrong while releasing payment")

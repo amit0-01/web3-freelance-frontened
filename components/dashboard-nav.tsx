@@ -56,14 +56,14 @@ export default function DashboardNav() {
             >
               Dashboard
             </Link>
-            <Link
+            {/* <Link
               href="/jobs"
               className={`text-sm font-medium ${
                 isActive("/jobs") ? "text-foreground" : "text-muted-foreground"
               } transition-colors hover:text-foreground`}
             >
               Jobs
-            </Link>
+            </Link> */}
             <Link
               href="/payments"
               className={`text-sm font-medium ${

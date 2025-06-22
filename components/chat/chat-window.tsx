@@ -36,15 +36,12 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
 
     const roomId = String(jobIds[0])
     joinRoom(roomId)
-    console.log("Joined room:", roomId)
 
     const handleReceiveMessage = (msg: any) => {
-      console.log("📩 Received message:", msg)
       setMessages((prev: typeof messages) => [...prev, msg])
     }
 
     const handleChatHistory = (history: typeof messages) => {
-      console.log("📚 Chat history:", history)
       setMessages(history)
     }
 
@@ -56,14 +53,12 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
       if(data.senderId !== getUserDetails().id) {
       setTyping(true)
       }
-      console.log("✍️ Typing:", data)
     })
 
     socket.on("stopTyping", (data) => {
       if(data.senderId !== getUserDetails().id) { 
       setTyping(false)
       }
-      console.log("✍️ Stop typing:", data)
     })
     socket.on("userConnected", user => console.log("🔌 User connected:", user))
     socket.on("userDisconnected", userId => console.log("🔌 User disconnected:", userId))
@@ -99,9 +94,6 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
   const handleTyping = () => {
     const userId = getUserDetails().id;
     const roomId = String(conversation.jobIds[0]);
-  
-    console.log('user is typing');
-    console.log("Typing event for roomId:", roomId, "by userId:", userId);
   
     socket.emit("typing", {
       roomId, 

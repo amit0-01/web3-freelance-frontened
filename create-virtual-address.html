@@ -98,7 +98,6 @@
         });
 
         const data = await response.json();
-        console.log('data',data)
         if (!response.ok) {
             throw new Error(data.error || "Failed to create virtual address");
         }
@@ -221,16 +220,16 @@ async function getTransactionDetails(txHash, API_KEY) {
         const response = await fetch(url);
         const data = await response.json();
 
-        console.log("Raw Transaction Data:", data);
+        ("Raw Transaction Data:", data);
 
         if (data.result) {
             const tx = data.result;
-            console.log(`BNB Transfer From: ${tx.from}`);
-            console.log(`BNB Transfer To: ${tx.to}`);
+            (`BNB Transfer From: ${tx.from}`);
+            (`BNB Transfer To: ${tx.to}`);
 
             // Check if the transaction is an ERC-20 (BEP-20) token transfer
             if (tx.input.startsWith("0xa9059cbb")) { // ERC-20 Transfer method signature
-                console.log("Detected BEP-20 Token Transfer!");
+                ("Detected BEP-20 Token Transfer!");
 
                 // Fetch token transaction logs
                 const tokenTxUrl = `https://api.bscscan.com/api?module=account&action=tokentx&txhash=${txHash}&apikey=${API_KEY}`;
@@ -239,16 +238,16 @@ async function getTransactionDetails(txHash, API_KEY) {
 
                 if (tokenTxData.result && tokenTxData.result.length > 0) {
                     const tokenTx = tokenTxData.result[0]; // First transfer event
-                    console.log(`Real Token Sender: ${tokenTx.from}`);
-                    console.log(`Real Token Receiver: ${tokenTx.to}`);
-                    console.log(`Token: ${tokenTx.tokenName} (${tokenTx.tokenSymbol})`);
-                    console.log(`Amount: ${tokenTx.value / Math.pow(10, tokenTx.tokenDecimal)}`);
+                    (`Real Token Sender: ${tokenTx.from}`);
+                    (`Real Token Receiver: ${tokenTx.to}`);
+                    (`Token: ${tokenTx.tokenName} (${tokenTx.tokenSymbol})`);
+                    (`Amount: ${tokenTx.value / Math.pow(10, tokenTx.tokenDecimal)}`);
                 } else {
-                    console.log("No BEP-20 token transfers found in this transaction.");
+                    ("No BEP-20 token transfers found in this transaction.");
                 }
             }
         } else {
-            console.log("Invalid transaction hash or transaction not found.");
+            ("Invalid transaction hash or transaction not found.");
         }
     } catch (error) {
         console.error("Error fetching transaction details:", error);
