@@ -58,7 +58,7 @@ export default function Home() {
                 <img
                   alt="Hero"
                   className="aspect-video overflow-hidden rounded-xl object-cover object-center"
-                  src="/placeholder.svg?height=550&width=750"
+                  src="https://images.pexels.com/photos/5905703/pexels-photo-5905703.jpeg"
                 />
               </div>
             </div>
