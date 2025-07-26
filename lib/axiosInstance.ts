@@ -1,10 +1,10 @@
 "use client";
 import axios from "axios";
-import { storageService } from "./storageService";
 import Cookies from "js-cookie";
 
+const apiUrl = "http://localhost:8000";
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || apiUrl,
 });
 
 axiosInstance.interceptors.request.use(

@@ -27,6 +27,8 @@ export default function LoginPage() {
       const response = await axiosInstance.post("/auth/login", { email, password })
 
       const data = response.data
+      console.log('data', data)
+      if(data.success){
       const expiryTimestamp = Date.now() + 60 * 60 * 1000
       // const expiryTimestamp = Date.now() + 60 * 1000
       storageService.setItem("user", data)
@@ -36,6 +38,7 @@ export default function LoginPage() {
       toast.success("Login successful")
 
       router.push("/dashboard")
+      }
     } catch (error: any) {
       toast.error('Login Failed')
     } finally {
@@ -64,6 +67,7 @@ export default function LoginPage() {
       // Send walletAddress and signature to backend for verification
       const response = await axiosInstance.post("/auth/web3-login", { walletAddress, signature })
       const data = response.data
+      console.log('data', data)
       const expiryTimestamp = Date.now() + 60 * 60 * 1000
       storageService.setItem('tokenExpiry', expiryTimestamp)
       Cookies.set("token", data.accessToken, { expires: 1 / 24, secure: true, sameSite: "Strict" });
