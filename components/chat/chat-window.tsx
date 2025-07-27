@@ -10,15 +10,15 @@ import Link from "next/link"
 import socket, { joinRoom, offReceiveMessage, onReceiveMessage, sendMessage } from "@/services/socket"
 import { ChatWindowProps } from "@/lib/chat.interface"
 import { Message } from "../ui/message"
-import { set } from "date-fns"
 
-export default function ChatWindow({ conversation, onSendMessage }: ChatWindowProps) {
+export default function ChatWindow({ conversation,conversationId ,onSendMessage }: ChatWindowProps) {
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { participant, jobIds, jobTitle } = conversation
   const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string }>>(conversation.messages || [])
   const [typing, setTyping] = useState(false)
+  const [online, setOnline] = useState(false);
   let typingTimeout: NodeJS.Timeout;
 
   const scrollToBottom = useCallback(() => {
@@ -60,9 +60,20 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
       setTyping(false)
       }
     })
+    // socket.on('onlineStatus', (userIds: string[]) => {
+    //   userIds.forEach((users:any)=>{
+    //     if(users.userId == conversationId){
+    //     setOnline(true);
+    //     }
+    //   })
+    // });
+    // socket.on('userLastSeen', ({ userId, lastSeen }) => {
+    //   console.log('userids', userId);
+    //   console.log('lastseen', lastSeen);
+    // });
     socket.on("userConnected", user => console.log("🔌 User connected:", user))
     socket.on("userDisconnected", userId => console.log("🔌 User disconnected:", userId))
-    socket.onAny((event, ...args) => console.log("📡 Socket event:", event, args))
+    // socket.onAny((event, ...args) => console.log("📡 Socket event:", event, args))
 
     return () => {
       offReceiveMessage()
@@ -112,27 +123,36 @@ export default function ChatWindow({ conversation, onSendMessage }: ChatWindowPr
   };  
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
-          {participant.avatar ? (
-            <img
-              src={participant.avatar}
-              alt={participant.name}
-              className="h-10 w-10 rounded-full object-cover"
+          <div className="relative">
+            {participant.avatar ? (
+              <img
+                src={participant.avatar}
+                alt={participant.name}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="font-medium text-primary">
+                  {participant.name.charAt(0)}
+                </span>
+              </div>
+            )}
+            {/* Online/Offline Dot */}
+            <span
+              className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white ${
+                online ? 'bg-green-500' : 'bg-gray-400'
+              }`}
+              title={online ? 'Online' : 'Offline'}
             />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="font-medium text-primary">
-                {participant.name.charAt(0)}
-              </span>
-            </div>
-          )}
+          </div>
           <div className="flex gap-3">
             <div>
             <h3 className="font-medium">{participant.name}</h3>
-           {typing && <p>User is Typing ....</p>}
+           {typing && <p>Typing ....</p>}
             </div>
             <div className="text-sm text-muted-foreground flex items-center gap-1">
               <Link href={`/jobs/${jobIds[0]}`} className="hover:underline flex items-center">

@@ -12,6 +12,7 @@ export interface ChatSidebarProps {
   
 export interface ChatWindowProps {
     conversation: any
+    conversationId : any
     onSendMessage: (content: string) => void
   }
 

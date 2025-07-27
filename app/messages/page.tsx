@@ -126,13 +126,13 @@ export default function MessagesPage() {
   }
 
   return (
-<div className="flex flex-col min-h-screen">
+<div className="flex flex-col h-screen">
   <DashboardNav />
 
   <main className="flex flex-1 overflow-hidden">
     {/* Sidebar */}
     <div className="w-[320px] border-r flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         <ChatSidebar
           conversations={conversations}
           activeConversationId={activeConversation?.id}
@@ -146,6 +146,7 @@ export default function MessagesPage() {
       {activeConversation ? (
         <ChatWindow
           conversation={activeConversation}
+          conversationId={conversationId}
           onSendMessage={handleSendMessage}
         />
       ) : (

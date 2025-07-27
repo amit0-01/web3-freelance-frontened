@@ -2,7 +2,9 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const apiUrl = "http://localhost:8000";
+const apiUrl = 
+"http://localhost:8000";
+// "https://web3-freelance-backend.onrender.com"
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || apiUrl,
 });
