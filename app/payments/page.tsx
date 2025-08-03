@@ -33,10 +33,8 @@ export default function PaymentsPage() {
     try {
       const response = await getPayments(activeTab)
       if(response.status == 200) {
-        console.log('response', response.data)
         setPayments(response.data)
         setFilteredPayments([...response.data]) 
-        console.log('fileteredPayments', filteredPayments)
       }
     } catch (error) {
       toast.error("Failed to fetch payments")
@@ -50,7 +48,6 @@ export default function PaymentsPage() {
   }, [activeTab])
 
   useEffect(() => {
-    console.log('filteredPayments updated:', filteredPayments);
   }, [filteredPayments]);
 
   useEffect(() => {

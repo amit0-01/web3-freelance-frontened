@@ -68,8 +68,6 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
     //   })
     // });
     // socket.on('userLastSeen', ({ userId, lastSeen }) => {
-    //   console.log('userids', userId);
-    //   console.log('lastseen', lastSeen);
     // });
     socket.on("userConnected", user => console.log("🔌 User connected:", user))
     socket.on("userDisconnected", userId => console.log("🔌 User disconnected:", userId))
