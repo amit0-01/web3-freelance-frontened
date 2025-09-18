@@ -2,6 +2,7 @@ export interface ConversationItemProps {
     conversation: any
     isActive: boolean
     onClick: () => void
+    isOnline: boolean
   }
   
 export interface ChatSidebarProps {

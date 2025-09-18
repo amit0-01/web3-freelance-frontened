@@ -1,15 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search } from "lucide-react"
 import { ConversationItem } from "../ui/conversationItem"
 import { ChatSidebarProps } from "@/lib/chat.interface"
+import socket from "@/services/socket"
 
 
 export default function ChatSidebar({ conversations, activeConversationId, onSelectConversation }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [onlineStatusMap, setOnlineStatusMap] = useState<Record<string, 'online' | 'offline'>>({})
+
 
   const filteredConversations = conversations.filter((conversation) =>
     conversation.participant.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -19,6 +21,35 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
   const sortedConversations = [...filteredConversations].sort(
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   )
+
+  useEffect(() => {
+    // Connect socket
+    if (!socket.connected) {
+      socket.connect()
+    }
+
+    // Emit status check for all participants
+    conversations.forEach((conversation) => {
+      socket.emit("getOnlineStatus", { userId: conversation.participant.id })
+    })
+
+    // Listen for individual status updates
+    const handleStatus = ({ userId, status }: { userId: string; status: 'online' | 'offline' }) => {
+      console.log('userId', userId);
+      setOnlineStatusMap((prev) => ({ ...prev, [userId]: status }))
+    }
+
+    socket.on("onlineStatus", handleStatus)
+
+    return () => {
+      socket.off("onlineStatus", handleStatus)
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('Updated onlineStatusMap', onlineStatusMap);
+  }, [onlineStatusMap]);
+  
 
   return (
     <div className="w-full md:w-80 border-r flex flex-col h-full">
@@ -43,6 +74,7 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
                 key={conversation.id}
                 conversation={conversation}
                 isActive={conversation.id === activeConversationId}
+                isOnline={onlineStatusMap[conversation.participant.id] === "online"}
                 onClick={() => onSelectConversation(conversation)}
               />
             ))}
@@ -50,5 +82,5 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
         )}
       </div>
     </div>
-  )  
+  )
 }

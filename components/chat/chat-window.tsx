@@ -19,7 +19,62 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
   const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string }>>(conversation.messages || [])
   const [typing, setTyping] = useState(false)
   const [online, setOnline] = useState(false);
+  const [inCall, setInCall] = useState(false);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   let typingTimeout: NodeJS.Timeout;
+  const localVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  let peerConnection: RTCPeerConnection
+
+  // CALL START
+  const startCall = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    if (localVideoRef.current) localVideoRef.current.srcObject = stream
+  
+    peerConnection = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] })
+    stream.getTracks().forEach(track => peerConnection.addTrack(track, stream))
+  
+    peerConnection.ontrack = event => {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0]
+    }
+  
+    peerConnection.onicecandidate = event => {
+      if (event.candidate) {
+        socket.emit("ice-candidate", { candidate: event.candidate, to: participant.id })
+      }
+    }
+  
+    const offer = await peerConnection.createOffer()
+    await peerConnection.setLocalDescription(offer)
+    socket.emit("offer", { sdp: offer, to: participant.id })
+  
+    // 👇 show video UI
+    setInCall(true)
+  }  
+
+  // CALL END
+  const endCall = () => {
+    // Stop local tracks
+    if (localVideoRef.current?.srcObject) {
+      (localVideoRef.current.srcObject as MediaStream)
+        .getTracks()
+        .forEach(track => track.stop())
+      localVideoRef.current.srcObject = null
+    }
+  
+    // Clear remote stream
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null
+    }
+  
+    // Close connection
+    if (peerConnection) {
+      peerConnection.close()
+    }
+  
+    setInCall(false)
+  }
+  
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -33,10 +88,57 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
     if (!socket.connected) {
       socket.connect()
     }
+  
+    // Handle incoming offer
+    socket.on("offer", async (data) => {
+      peerConnectionRef.current = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream
+      stream.getTracks().forEach(track => peerConnectionRef.current?.addTrack(track, stream))
+  
+      peerConnectionRef.current.ontrack = event => {
+        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0]
+      }
+  
+      await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.sdp))
+      const answer = await peerConnectionRef.current.createAnswer()
+      await peerConnectionRef.current.setLocalDescription(answer)
+      socket.emit("answer", { sdp: answer, to: data.from })
+    })
+  
+    // Handle incoming answer
+    socket.on("answer", async (data) => {
+      if (peerConnectionRef.current) {
+        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.sdp))
+      }
+    })
+  
+    // Handle ICE candidates
+    socket.on("ice-candidate", async (data) => {
+      try {
+        if (peerConnectionRef.current && data.candidate) {
+          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate))
+        }
+      } catch (err) {
+        console.error("Error adding received ice candidate", err)
+      }
+    })
+  
+    return () => {
+      socket.off("offer")
+      socket.off("answer")
+      socket.off("ice-candidate")
+    }
+  }, [])
+  
+
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect()
+    }
 
     const roomId = String(jobIds[0])
     joinRoom(roomId)
-
     const handleReceiveMessage = (msg: any) => {
       setMessages((prev: typeof messages) => [...prev, msg])
     }
@@ -71,6 +173,17 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
     // });
     socket.on("userConnected", user => console.log("🔌 User connected:", user))
     socket.on("userDisconnected", userId => console.log("🔌 User disconnected:", userId))
+    socket.on("userOnline", ({ userId, status }) => {
+      if(userId == conversationId){
+      setOnline(true);
+      }
+    });
+
+    socket.on("userOffline", ({ userId, lastActive }) => {
+      if(userId == conversationId){
+      setOnline(false);
+      }
+    }); 
     // socket.onAny((event, ...args) => console.log("📡 Socket event:", event, args))
 
     return () => {
@@ -159,10 +272,26 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
             </div>
           </div>
         </div>
+        <Button variant="ghost" size="icon" onClick={startCall}>
+          📹
+        </Button>
+        <Button variant="ghost" size="icon" onClick={endCall}>
+          ❌
+        </Button>
+
         <Button variant="ghost" size="icon">
           <MoreVertical className="h-5 w-5" />
         </Button>
       </div>
+
+
+      {/* Video Area */}
+      {inCall && (
+        <div className="video-container flex gap-2 p-2 border-b">
+          <video ref={localVideoRef} autoPlay muted playsInline className="w-40 h-40 bg-black rounded" />
+          <video ref={remoteVideoRef} autoPlay playsInline className="w-40 h-40 bg-black rounded" />
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 overflow-y-auto p-4">
