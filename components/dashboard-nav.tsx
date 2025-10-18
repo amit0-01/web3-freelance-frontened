@@ -20,7 +20,6 @@ export default function DashboardNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isActive = (path: string) => {
-    console.log(pathname, path)
     return pathname === path || pathname?.startsWith(`${path}/`)
   }
 

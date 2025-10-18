@@ -184,7 +184,6 @@ export default function ChatWindow({ conversation,conversationId ,onSendMessage 
       setOnline(false);
       }
     }); 
-    // socket.onAny((event, ...args) => console.log("📡 Socket event:", event, args))
 
     return () => {
       offReceiveMessage()

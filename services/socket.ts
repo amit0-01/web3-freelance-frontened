@@ -36,7 +36,6 @@ export const sendMessage = (
   senderId: string,
   message: string
 ) => {
-  console.log("📤 Sending message:", { roomId, receiverId, senderId, message });
   socket.emit("sendMessage", { roomId, receiverId, senderId, message });
 };
 

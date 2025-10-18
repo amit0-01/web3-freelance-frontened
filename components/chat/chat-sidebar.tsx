@@ -35,7 +35,6 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
 
     // Listen for individual status updates
     const handleStatus = ({ userId, status }: { userId: string; status: 'online' | 'offline' }) => {
-      console.log('userId', userId);
       setOnlineStatusMap((prev) => ({ ...prev, [userId]: status }))
     }
 
@@ -45,10 +44,6 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
       socket.off("onlineStatus", handleStatus)
     }
   }, [])
-
-  useEffect(() => {
-    console.log('Updated onlineStatusMap', onlineStatusMap);
-  }, [onlineStatusMap]);
   
 
   return (
