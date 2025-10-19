@@ -12,7 +12,7 @@ export const isServer = () => typeof window === "undefined";
 export function getUserDetails(){
   if (typeof window === "undefined") return null;
   const user:any = storageService.getItem('user');
-  return user.user;
+  return user?.user;
 }
 
 export function getUserRole(){

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";  // Import react-toastify
+import { storageService } from "@/lib/storageService";
 
 export const useAuthRedirect = () => {
   const router = useRouter();
@@ -14,7 +15,8 @@ export const useAuthRedirect = () => {
       return;
     }
 
-    const token = Cookies.get("token");
+    const userData:any = storageService.getItem("user");
+    const token = userData.accessToken;
     const expiry = localStorage.getItem("tokenExpiry");
 
     if( Date.now() > Number(expiry) && expiry!=null){
@@ -22,9 +24,7 @@ export const useAuthRedirect = () => {
         }
     if (!token || !expiry || Date.now() > Number(expiry)) {
       // Show toast notification when token is expired
-      Cookies.remove("token");
-      localStorage.removeItem("tokenExpiry");
-      localStorage.removeItem("user");
+      storageService.removeItem("user");
       router.push("/auth/login");
     }
   }, [pathname]);

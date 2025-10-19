@@ -1,7 +1,9 @@
 import { getUserDetails } from "@/lib/utils";
 import { io } from "socket.io-client";
 
-const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
+const socketUrl = "http://192.168.31.198:8000";
+
+const socket = io(socketUrl, {
   query: { userId: getUserDetails()?.id },
   withCredentials: true,
   transports: ["websocket"],
@@ -22,6 +24,14 @@ socket.on('receiveMessage', (data) => {
 
 socket.on('typing', (data) => {
   console.log("✍️ Typing:", data);
+});
+
+socket.on('offer', (data) => {
+  console.log("🎧 Offer:", data);
+});
+
+socket.on('answer', (data) => {
+  console.log("🎧 Answer:", data);
 });
 
 
