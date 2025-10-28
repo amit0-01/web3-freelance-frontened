@@ -1,8 +1,10 @@
 import { getUserDetails } from "@/lib/utils";
 import { io } from "socket.io-client";
 
-const socketUrl = "http://192.168.31.198:8000";
-
+const socketUrl = 
+  // "http://192.168.31.198:8000";
+  //  "https://web3-freelance-backend.onrender.com"
+  "http://localhost:8000"
 const socket = io(socketUrl, {
   query: { userId: getUserDetails()?.id },
   withCredentials: true,

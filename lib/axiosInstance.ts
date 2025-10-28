@@ -4,9 +4,9 @@ import Cookies from "js-cookie";
 import { storageService } from "./storageService";
 
 const apiUrl = 
-// "http://localhost:8000";
+"http://localhost:8000";
 // "https://web3-freelance-backend.onrender.com"
-"http://192.168.31.198:8000"
+// "http://192.168.31.198:8000"
 const axiosInstance = axios.create({
   baseURL: apiUrl,
 });

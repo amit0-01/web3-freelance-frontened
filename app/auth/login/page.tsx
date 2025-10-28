@@ -29,7 +29,6 @@ export default function LoginPage() {
       const data = response.data
       if(data.success){
       const expiryTimestamp = Date.now() + 60 * 60 * 1000
-      // const expiryTimestamp = Date.now() + 60 * 1000
       storageService.setItem("user", data)
       storageService.setItem('tokenExpiry', expiryTimestamp)
       Cookies.set("token", data.accessToken, { expires: 1 / 24, secure: true, sameSite: "Strict" });
@@ -82,6 +81,30 @@ export default function LoginPage() {
     }
   }
 
+  // Guest Login
+  const handleGuestLogin = async () => {
+    try {
+      setIsLoading(true)
+
+      const response = await axiosInstance.post("/auth/guest-login")
+      const data = response.data
+
+      if (data.success) {
+        const expiryTimestamp = Date.now() + 60 * 60 * 1000
+        storageService.setItem("user", data)
+        storageService.setItem('tokenExpiry', expiryTimestamp)
+        Cookies.set("token", data.accessToken, { expires: 1 / 24, secure: true, sameSite: "Strict" });
+
+        toast.success("Logged in as guest")
+        router.push("/dashboard")
+      }
+    } catch (error: any) {
+      toast.error("Guest login failed")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="mx-auto w-full max-w-md space-y-6">
@@ -128,6 +151,10 @@ export default function LoginPage() {
 
           <Button onClick={handleWeb3Login} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isLoading}>
             {isLoading ? "Connecting..." : "Login with MetaMask"}
+          </Button>
+
+          <Button onClick={handleGuestLogin} variant="outline" className="w-full" disabled={isLoading}>
+            {isLoading ? "Connecting..." : "Continue as Guest"}
           </Button>
 
           <div className="text-center text-sm">
