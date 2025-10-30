@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { storageService } from "./storageService";
+import { storageService } from "../services/storageService";
 
 const apiUrl = 
 "http://localhost:8000";

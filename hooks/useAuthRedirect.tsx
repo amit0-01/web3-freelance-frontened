@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import Cookies from "js-cookie";
 import { toast } from "react-toastify";  // Import react-toastify
-import { storageService } from "@/lib/storageService";
+import { storageService } from "@/services/storageService";
 
 export const useAuthRedirect = () => {
   const router = useRouter();

@@ -1,8 +1,19 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import { getUserDetails } from "@/lib/utils"
+import { useEffect, useState } from "react"
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const user = getUserDetails()
+    setIsLoggedIn(!!user)
+  }, [])
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
@@ -10,12 +21,25 @@ export default function Home() {
           <span className="font-bold text-xl">Web3Jobs</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link href="/jobs" className="text-sm font-medium hover:underline underline-offset-4">
-            Browse Jobs
-          </Link>
-          <Link href="/about" className="text-sm font-medium hover:underline underline-offset-4">
-            About
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/jobs" className="text-sm font-medium hover:underline underline-offset-4">
+                Browse Jobs
+              </Link>
+              <Link href="/about" className="text-sm font-medium hover:underline underline-offset-4">
+                About
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium text-muted-foreground cursor-not-allowed">
+                Browse Jobs
+              </span>
+              <span className="text-sm font-medium text-muted-foreground cursor-not-allowed">
+                About
+              </span>
+            </>
+          )}
           <Link href="/auth/login" className="text-sm font-medium hover:underline underline-offset-4">
             Login
           </Link>
@@ -38,21 +62,47 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href="/jobs">
-                    <Button className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                  {isLoggedIn ? (
+                    <Link href="/jobs">
+                      <Button className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                        Browse Jobs
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button 
+                      disabled 
+                      className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                    >
                       Browse Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </Link>
-                  <Link href="/jobs/post">
+                  )}
+                  
+                  {isLoggedIn ? (
+                    <Link href="/jobs/post">
+                      <Button
+                        variant="outline"
+                        className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        Post a Job
+                      </Button>
+                    </Link>
+                  ) : (
                     <Button
+                      disabled
                       variant="outline"
                       className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                     >
                       Post a Job
                     </Button>
-                  </Link>
+                  )}
                 </div>
+                {!isLoggedIn && (
+                  <p className="text-sm text-muted-foreground">
+                    Please <Link href="/auth/login" className="underline hover:text-primary">login</Link> or <Link href="/auth/register" className="underline hover:text-primary">register</Link> to access these features.
+                  </p>
+                )}
               </div>
               <div className="flex items-center justify-center">
                 <img
@@ -118,4 +168,3 @@ export default function Home() {
     </div>
   )
 }
-

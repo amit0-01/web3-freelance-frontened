@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import axiosInstance from "@/lib/axiosInstance"
-import { storageService } from "@/lib/storageService"
+import { storageService } from "@/services/storageService"
 import { ethers } from "ethers"
 import Cookies from "js-cookie"; 
 import { toast } from 'react-toastify';
