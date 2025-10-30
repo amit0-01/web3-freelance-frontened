@@ -3,30 +3,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Globe, Users, Zap, Lock, TrendingUp, ArrowRight, CheckCircle, Star } from "lucide-react"
+import Header from "@/components/Header"
 
 export default function AboutPage() {
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link href="/" className="flex items-center justify-center">
-          <span className="font-bold text-xl">Web3Jobs</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link href="/jobs" className="text-sm font-medium hover:underline underline-offset-4">
-            Browse Jobs
-          </Link>
-          <Link href="/about" className="text-sm font-medium hover:underline underline-offset-4">
-            About
-          </Link>
-          <Link href="/auth/login" className="text-sm font-medium hover:underline underline-offset-4">
-            Login
-          </Link>
-          <Link href="/auth/register" className="text-sm font-medium hover:underline underline-offset-4">
-            Register
-          </Link>
-        </nav>
-      </header>
-
+     <Header/>
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-12 md:py-24 lg:py-32">
