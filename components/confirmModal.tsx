@@ -1,33 +1,54 @@
-// components/ConfirmModal.tsx
-import React from "react"
+"use client"
 
-type ConfirmModalProps = {
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+interface ConfirmModalProps {
   isOpen: boolean
-  title?: string
+  title: string
   message: string
   onConfirm: () => void
   onCancel: () => void
+  confirmText?: string
+  cancelText?: string
+  isLoading?: boolean
+  isDangerous?: boolean
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title = "Confirm Action", message, onConfirm, onCancel }) => {
-  if (!isOpen) return null
-
+export default function ConfirmModal({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  isLoading = false,
+  isDangerous = false,
+}: ConfirmModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">{title}</h2>
-        <p className="mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
-            Cancel
-          </button>
-          <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+            {cancelText}
+          </Button>
+          <Button onClick={onConfirm} disabled={isLoading} variant={isDangerous ? "destructive" : "default"}>
+            {isLoading ? "Processing..." : confirmText}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
-
-export default ConfirmModal

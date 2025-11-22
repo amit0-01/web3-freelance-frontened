@@ -8,12 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import DashboardNav from "@/components/dashboard-nav"
-// import PaymentReleaseModal from "@/components/payment-release-modal"
+import PaymentMethodModal from "@/components/payment-method-modal"
 import { formatDate } from "@/lib/utils"
-import { getPayments, releasePayment } from "@/services/paymentService"
+import { type Payment, getPayments, releasePayment } from "@/lib/payment"
 import { toast } from "react-toastify"
-import { Payment } from "@/lib/api"
-import ConfirmModal from "@/components/confirmModal"
 
 interface Job {
   id: string
@@ -27,14 +25,15 @@ export default function PaymentsPage() {
   const [activeTab, setActiveTab] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
-  const [isReleaseModalOpen, setIsReleaseModalOpen] = useState(false)
+  const [isPaymentMethodModalOpen, setIsPaymentMethodModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const fetchPayments = async () => {
+  const loadPayments = async () => {
     try {
       const response = await getPayments(activeTab)
-      if(response.status == 200) {
-        setPayments(response.data)
-        setFilteredPayments([...response.data]) 
+      if (response) {
+        setPayments(response)
+        setFilteredPayments([...response])
       }
     } catch (error) {
       toast.error("Failed to fetch payments")
@@ -44,11 +43,8 @@ export default function PaymentsPage() {
   }
 
   useEffect(() => {
-    fetchPayments()
+    loadPayments()
   }, [activeTab])
-
-  useEffect(() => {
-  }, [filteredPayments]);
 
   useEffect(() => {
     // Filter payments based on active tab
@@ -67,65 +63,32 @@ export default function PaymentsPage() {
         filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
         break
       case "highest":
-        filtered.sort((a:any, b:any) => b.amount - a.amount)
+        filtered.sort((a: any, b: any) => b.amount - a.amount)
         break
       case "lowest":
-        filtered.sort((a:any, b:any) => a.amount - b.amount)
+        filtered.sort((a: any, b: any) => a.amount - b.amount)
         break
     }
 
     setFilteredPayments(filtered)
   }, [payments, activeTab, sortBy])
 
-  // const handleReleasePayment = async (paymentId: string) => {
-  //   try {
-  //     const response = await fetch(`/api/payments/${paymentId}/release`, {
-  //       method: "POST",
-  //     })
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to release payment")
-  //     }
-
-  //     const updatedPayment = await response.json()
-
-  //     // Update local state
-  //     setPayments((prevPayments) =>
-  //       prevPayments.map((payment) => (payment.id === paymentId ? { ...payment, status: "released" } : payment)),
-  //     )
-
-  //     toast({
-  //       title: "Payment released",
-  //       description: "The payment has been successfully released to the freelancer.",
-  //     })
-
-  //     setIsReleaseModalOpen(false)
-  //     setSelectedPayment(null)
-  //   } catch (error) {
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to release payment",
-  //       variant: "destructive",
-  //     })
-  //   }
-  // }
-
   const openReleaseModal = (payment: Payment) => {
     setSelectedPayment(payment)
-    setIsReleaseModalOpen(true)
+    setIsPaymentMethodModalOpen(true)
   }
 
-  const handleConfirmRelease = async () => {
+  const handleConfirmRelease = async (paymentMethod: "blockchain" | "paypal") => {
     if (!selectedPayment) return
-  
+
+    setIsProcessing(true)
     try {
-      const response:any = await releasePayment(selectedPayment.job.id)
-  
-      if (response.data.success) {
+      const response: any = await releasePayment(selectedPayment.job.id, paymentMethod)
+
+      if (response.data?.success) {
         toast.success("Payment released successfully")
-        setIsReleaseModalOpen(false)
-        fetchPayments() 
-        // Optional: trigger a refresh or update state to reflect changes
+        setIsPaymentMethodModalOpen(false)
+        loadPayments()
       } else {
         toast.error("Something went wrong while releasing payment")
         console.error("Unexpected response:", response)
@@ -133,9 +96,10 @@ export default function PaymentsPage() {
     } catch (error: any) {
       toast.error("Failed to release payment")
       console.error("Release payment error:", error?.response || error)
+    } finally {
+      setIsProcessing(false)
     }
   }
-  
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -189,7 +153,7 @@ export default function PaymentsPage() {
               </Select>
             </div>
           </div>
-  
+
           <div className="grid gap-6 md:grid-cols-4">
             <Card className="md:col-span-1">
               <CardHeader>
@@ -200,8 +164,8 @@ export default function PaymentsPage() {
                   <div className="text-sm text-muted-foreground">Total Earnings</div>
                   <div className="text-2xl font-bold">
                     {payments
-                      .filter((p:any) => p.type === "incoming" && p.status === "released")
-                      .reduce((sum, p:any) => sum + p.amount, 0)
+                      .filter((p: any) => p.type === "incoming" && p.status === "released")
+                      .reduce((sum, p: any) => sum + p.amount, 0)
                       .toFixed(2)}{" "}
                     ETH
                   </div>
@@ -210,21 +174,19 @@ export default function PaymentsPage() {
                   <div className="text-sm text-muted-foreground">Total Spent</div>
                   <div className="text-2xl font-bold">
                     {payments
-                      .filter((p:any) => p.type === "outgoing" && p.status === "released")
-                      .reduce((sum, p:any) => sum + p.amount, 0)
+                      .filter((p: any) => p.type === "outgoing" && p.status === "released")
+                      .reduce((sum, p: any) => sum + p.amount, 0)
                       .toFixed(2)}{" "}
                     ETH
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="text-sm text-muted-foreground">Pending Payments</div>
-                  <div className="text-2xl font-bold">
-                    {payments.filter((p) => p.status === "completed").length}
-                  </div>
+                  <div className="text-2xl font-bold">{payments.filter((p) => p.status === "completed").length}</div>
                 </div>
               </CardContent>
             </Card>
-  
+
             <div className="md:col-span-3 space-y-6">
               <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
@@ -242,84 +204,81 @@ export default function PaymentsPage() {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                    {payments.map((payment:any) => (
-                      <Card key={payment.id || Math.random()} className="overflow-hidden">
-                        <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row">
-                            <div
-                              className={`w-1 md:w-2 flex-shrink-0 ${
-                                payment.type === "incoming" ? "bg-green-500" : "bg-blue-500"
-                              }`}
-                            ></div>
-                            <div className="p-6 flex-grow">
-                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold">
-                                      <Link href={`/jobs/${payment.id || ''}`} className="hover:underline">
-                                        {payment.job.title || '--'}
-                                      </Link>
-                                    </h3>
-                                    {getStatusBadge(payment.status)}
+                      {payments.map((payment: any) => (
+                        <Card key={payment.id || Math.random()} className="overflow-hidden">
+                          <CardContent className="p-0">
+                            <div className="flex flex-col md:flex-row">
+                              <div
+                                className={`w-1 md:w-2 flex-shrink-0 ${
+                                  payment.type === "incoming" ? "bg-green-500" : "bg-blue-500"
+                                }`}
+                              ></div>
+                              <div className="p-6 flex-grow">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="font-semibold">
+                                        <Link href={`/jobs/${payment.id || ""}`} className="hover:underline">
+                                          {payment.job.title || "--"}
+                                        </Link>
+                                      </h3>
+                                      {getStatusBadge(payment.status)}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {payment.type === "incoming"
+                                        ? "Payment from client"
+                                        : `Payment to ${payment.freelancer?.name || "--"}`}
+                                    </p>
                                   </div>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {payment.type === "incoming"
-                                      ? "Payment from client"
-                                      : `Payment to ${payment.freelancer?.name || '--'}`}
-                                  </p>
+                                  <div className="text-right">
+                                    <div className="font-bold text-lg">{payment.amount ?? 0} ETH</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Created: {formatDate(payment.createdAt || "")}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="font-bold text-lg">
-                                    {(payment.amount ?? 0)} ETH
-                                  </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Created: {formatDate(payment.createdAt || '')}
-                                  </div>
-                                </div>
-                              </div>
-                  
-                              <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                {payment.transactionHash && (
-                                  <div className="text-sm">
-                                    <span className="text-muted-foreground">Tx: </span>
-                                    <a
-                                      href={`https://etherscan.io/tx/${payment.transactionHash}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline"
-                                    >
-                                      {payment.transactionHash.substring(0, 10)}...
-                                      {payment.transactionHash.substring(payment.transactionHash.length - 8)}
-                                    </a>
-                                  </div>
-                                )}
-                  
-                                <div className="flex gap-2 md:ml-auto">
-                                  <Link href={`/jobs/${payment.job?.id || ''}`}>
-                                    <Button variant="outline" size="sm">
-                                      View Job
-                                    </Button>
-                                  </Link>
-                                  
-                                  {/* {payment.status === "ready_to_release" && ( */}
+
+                                <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                  {payment.transactionHash && (
+                                    <div className="text-sm">
+                                      <span className="text-muted-foreground">Tx: </span>
+                                      <a
+                                        href={`https://etherscan.io/tx/${payment.transactionHash}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline"
+                                      >
+                                        {payment.transactionHash.substring(0, 10)}...
+                                        {payment.transactionHash.substring(payment.transactionHash.length - 8)}
+                                      </a>
+                                    </div>
+                                  )}
+
+                                  <div className="flex gap-2 md:ml-auto">
+                                    <Link href={`/jobs/${payment.job?.id || ""}`}>
+                                      <Button variant="outline" size="sm">
+                                        View Job
+                                      </Button>
+                                    </Link>
+                                   {payment.status != "released" &&
                                     <Button size="sm" onClick={() => openReleaseModal(payment)}>
                                       Release Payment
                                     </Button>
-                                  {/* } */}
-                                 
-                                  {payment.status === "pending" && payment.type === "outgoing" && (
-                                    <Button size="sm" variant="outline" disabled>
-                                      Awaiting Completion
-                                    </Button>
-                                  )}
+                                    }
+
+                                    {payment.status === "pending" && payment.type === "outgoing" && (
+                                      <Button size="sm" variant="outline" disabled>
+                                        Awaiting Completion
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   )}
                 </TabsContent>
               </Tabs>
@@ -328,14 +287,18 @@ export default function PaymentsPage() {
         </div>
       </main>
 
-      <ConfirmModal
-        isOpen={isReleaseModalOpen}
-        title="Release Payment"
-        message="Are you sure you want to release this payment? This action is irreversible."
-        onConfirm={handleConfirmRelease}
-        onCancel={() => setIsReleaseModalOpen(false)}
+      <PaymentMethodModal
+        isOpen={isPaymentMethodModalOpen}
+        paymentAmount={selectedPayment?.amount ?? 0}
+        paymentTitle={selectedPayment?.job?.title || "Payment"}
+        onSelectBlockchain={() => handleConfirmRelease("blockchain")}
+        onSelectPayPal={() => handleConfirmRelease("paypal")}
+        onCancel={() => {
+          setIsPaymentMethodModalOpen(false)
+          setSelectedPayment(null)
+        }}
+        isLoading={isProcessing}
       />
     </div>
   )
-  
 }
