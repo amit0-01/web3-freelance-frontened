@@ -1,14 +1,18 @@
 import { getUserDetails } from "@/lib/utils";
 import { io } from "socket.io-client";
 
-const socketUrl = 
+const socketUrl = 'http://localhost:8000'
   // "http://192.168.31.198:8000";
   //  "https://web3-freelance-backend.onrender.com"
-  "http://localhost:8000"
+// "https://b6a5d05cfbe5.ngrok-free.app"
 const socket = io(socketUrl, {
   query: { userId: getUserDetails()?.id },
   withCredentials: true,
-  transports: ["websocket"],
+  extraHeaders: {
+    'ngrok-skip-browser-warning': 'true'
+  },
+  transports: ['websocket', 'polling']
+
 });
 
 

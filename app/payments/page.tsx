@@ -67,10 +67,10 @@ export default function PaymentsPage() {
         filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
         break
       case "highest":
-        filtered.sort((a, b) => b.amount - a.amount)
+        filtered.sort((a:any, b:any) => b.amount - a.amount)
         break
       case "lowest":
-        filtered.sort((a, b) => a.amount - b.amount)
+        filtered.sort((a:any, b:any) => a.amount - b.amount)
         break
     }
 
@@ -200,8 +200,8 @@ export default function PaymentsPage() {
                   <div className="text-sm text-muted-foreground">Total Earnings</div>
                   <div className="text-2xl font-bold">
                     {payments
-                      .filter((p) => p.type === "incoming" && p.status === "released")
-                      .reduce((sum, p) => sum + p.amount, 0)
+                      .filter((p:any) => p.type === "incoming" && p.status === "released")
+                      .reduce((sum, p:any) => sum + p.amount, 0)
                       .toFixed(2)}{" "}
                     ETH
                   </div>
@@ -210,8 +210,8 @@ export default function PaymentsPage() {
                   <div className="text-sm text-muted-foreground">Total Spent</div>
                   <div className="text-2xl font-bold">
                     {payments
-                      .filter((p) => p.type === "outgoing" && p.status === "released")
-                      .reduce((sum, p) => sum + p.amount, 0)
+                      .filter((p:any) => p.type === "outgoing" && p.status === "released")
+                      .reduce((sum, p:any) => sum + p.amount, 0)
                       .toFixed(2)}{" "}
                     ETH
                   </div>
@@ -242,7 +242,7 @@ export default function PaymentsPage() {
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                    {payments.map((payment) => (
+                    {payments.map((payment:any) => (
                       <Card key={payment.id || Math.random()} className="overflow-hidden">
                         <CardContent className="p-0">
                           <div className="flex flex-col md:flex-row">
@@ -301,11 +301,11 @@ export default function PaymentsPage() {
                                     </Button>
                                   </Link>
                                   
-                                  {payment.status === "ready_to_release" && (
+                                  {/* {payment.status === "ready_to_release" && ( */}
                                     <Button size="sm" onClick={() => openReleaseModal(payment)}>
                                       Release Payment
-                                    </Button>)
-                                  }
+                                    </Button>
+                                  {/* } */}
                                  
                                   {payment.status === "pending" && payment.type === "outgoing" && (
                                     <Button size="sm" variant="outline" disabled>

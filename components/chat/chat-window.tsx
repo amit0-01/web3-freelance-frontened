@@ -25,6 +25,7 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
   const [inCall, setInCall] = useState(false)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
+  const remoteStreamRef = useRef<MediaStream | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -35,7 +36,15 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
   const startCall = async () => {
     try {
       console.log("🎬 Starting call...")
-      hasReceivedAnswerRef.current = false // Reset flag
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Your browser doesn't support video calls. Please use a modern browser with HTTPS.");
+        console.error("getUserMedia is not supported");
+        return;
+      }
+      
+      hasReceivedAnswerRef.current = false
       
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       localStreamRef.current = stream
@@ -55,6 +64,12 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
           { urls: "stun:stun1.l.google.com:19302" },
+          // Add free TURN servers
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
         ] 
       })
       peerConnectionRef.current = pc
@@ -92,11 +107,42 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
       })
 
       pc.ontrack = (event) => {
-        console.log("📺 Remote track received:", event.track.kind)
+        console.log("📺 Remote track received:", event.track.kind, "readyState:", event.track.readyState)
         
-        if (remoteVideoRef.current && event.streams[0]) {
-          remoteVideoRef.current.srcObject = event.streams[0]
-          console.log("✅ Remote stream assigned")
+        if (event.streams[0]) {
+          const remoteStream = event.streams[0]
+          
+          // Only assign if not already assigned
+          if (!remoteStreamRef.current) {
+            remoteStreamRef.current = remoteStream
+            
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = remoteStream
+              console.log("✅ Remote stream assigned with", remoteStream.getTracks().length, "tracks")
+              console.log("   Tracks:", remoteStream.getTracks().map(t => `${t.kind}: ${t.readyState}`))
+              
+              // Play after a short delay to ensure stream is ready
+              setTimeout(() => {
+                if (remoteVideoRef.current) {
+                  console.log("Attempting to play remote video...")
+                  remoteVideoRef.current.play().catch(err => {
+                    console.error("Error playing remote video:", err)
+                  })
+                }
+              }, 100)
+            }
+          } else {
+            console.log("📺 Additional track added to existing stream")
+            // Check if we need to refresh the video after second track
+            if (remoteVideoRef.current && event.track.kind === 'video') {
+              console.log("Video track added, ensuring playback...")
+              setTimeout(() => {
+                remoteVideoRef.current?.play().catch(err => {
+                  console.error("Error replaying remote video:", err)
+                })
+              }, 200)
+            }
+          }
         }
       }
 
@@ -221,9 +267,27 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
         pc.ontrack = (event) => {
           console.log("📺 Remote track received:", event.track.kind)
           
-          if (remoteVideoRef.current && event.streams[0]) {
-            remoteVideoRef.current.srcObject = event.streams[0]
-            console.log("✅ Remote stream assigned")
+          if (event.streams[0]) {
+            const remoteStream = event.streams[0]
+            
+            // Only assign if not already assigned
+            if (!remoteStreamRef.current) {
+              remoteStreamRef.current = remoteStream
+              
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream
+                console.log("✅ Remote stream assigned with", remoteStream.getTracks().length, "tracks")
+                
+                // Play after a short delay to ensure stream is ready
+                setTimeout(() => {
+                  remoteVideoRef.current?.play().catch(err => {
+                    console.error("Error playing remote video:", err)
+                  })
+                }, 100)
+              }
+            } else {
+              console.log("📺 Additional track added to existing stream")
+            }
           }
         }
 

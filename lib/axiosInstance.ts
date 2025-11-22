@@ -6,9 +6,14 @@ import { storageService } from "../services/storageService";
 const apiUrl = 
 "http://localhost:8000";
 // "https://web3-freelance-backend.onrender.com"
-// "http://192.168.31.198:8000"
+// "http://10.121.222.106:8000"
+// "https://b6a5d05cfbe5.ngrok-free.app"
 const axiosInstance = axios.create({
   baseURL: apiUrl,
+  headers: {
+    'ngrok-skip-browser-warning': 'true',
+    'Content-Type': 'application/json',
+  }
 });
 
 axiosInstance.interceptors.request.use(
