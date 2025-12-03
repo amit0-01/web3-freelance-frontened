@@ -10,45 +10,58 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardNav from "@/components/dashboard-nav"
-import { useToast } from "@/hooks/use-toast"
+import { Profile } from "../types/profile.types"
+import { checkRazorPayStatus, connectToRazorPay, getUserProfile, updateProfile } from "@/services/profile.service"
+import { toast } from 'react-toastify';
 
-interface Profile {
-  name: string
-  email: string
-  bio: string
-  walletAddress: string
-  skills: string[]
-  website: string
-  github: string
-  twitter: string
-}
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const { toast } = useToast()
+  const [isRozorpayAccountConnected, setIsrozorpayAccountConnected] = useState(false);
+
+  const handleConnectRazorpay = async () => {
+    try {
+      const response = await connectToRazorPay();
+      if(response.data && response.data.success){
+      
+      }
+      // Redirect freelancer to Razorpay onboarding page
+      // window.location.href = data.onboardingUrl;
+    } catch (err) {
+      toast.error('Failed to start Razorpay onboarding')
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const response = await getUserProfile()
+      console.log('response', response)
+      if(response.status == 200){
+      setProfile(response.data.data.user);
+    }
+    } catch (error) {
+      toast.error('Failed to load profile data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchRazorPayStatus = async () =>{
+    try {
+      const response  = await checkRazorPayStatus()
+      if(response.status == 200 && response.data.connected){
+        setIsrozorpayAccountConnected(true);
+      }
+    } catch (error) {
+      toast.error('Error getting status')
+    }
+  }
+  
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch("/api/profile")
-        if (!response.ok) {
-          throw new Error("Failed to fetch profile")
-        }
-        const data = await response.json()
-        setProfile(data)
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
+    fetchRazorPayStatus();
     fetchProfile()
   }, [toast])
 
@@ -60,28 +73,13 @@ export default function ProfilePage() {
       const formData = new FormData(e.target as HTMLFormElement)
       const updatedProfile = Object.fromEntries(formData.entries())
 
-      const response = await fetch("/api/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedProfile),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile")
+      const response = await updateProfile(updatedProfile)
+      if(response.data.statusCode == 200){
+        toast.success('Your profile has been updated successfully')
       }
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully",
-      })
+      console.log('update profile repsonse ', response)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      })
+      toast.error('Failed to update profile')
     } finally {
       setIsSaving(false)
     }
@@ -140,23 +138,23 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="skills">Skills (comma separated)</Label>
-                      <Input id="skills" name="skills" defaultValue={profile?.skills.join(", ")} />
+                      <Input id="skills" name="skills" defaultValue={profile?.skills?.join(", ")} />
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="website">Website</Label>
-                        <Input id="website" name="website" defaultValue={profile?.website} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="github">GitHub</Label>
-                        <Input id="github" name="github" defaultValue={profile?.github} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="twitter">Twitter</Label>
-                        <Input id="twitter" name="twitter" defaultValue={profile?.twitter} />
-                      </div>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="websiteLink">Website</Label>
+                    <Input id="websiteLink" name="websiteLink" defaultValue={profile?.websiteLink} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="githubLink">GitHub</Label>
+                    <Input id="githubLink" name="githubLink" defaultValue={profile?.githubLink} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="twitterLink">Twitter</Label>
+                    <Input id="twitterLink" name="twitterLink" defaultValue={profile?.twitterLink} />
+                  </div>
+                  </div>
                   </CardContent>
                   <CardFooter className="flex justify-end">
                     <Button type="submit" disabled={isSaving}>
@@ -188,6 +186,31 @@ export default function ProfilePage() {
                       <Button variant="outline">Disconnect</Button>
                     </div>
                   </div>
+
+                  <div className="rounded-lg border p-4">
+                  <h3 className="font-medium mb-2">Razorpay Payouts</h3>
+
+                  {profile?.razorpayAccountId ? (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Razorpay account connected: <strong>{profile.razorpayAccountId}</strong>
+                      </p>
+                      <Button variant="outline" onClick={() => window.open("https://dashboard.razorpay.com/", "_blank")}>
+                        View Razorpay Dashboard
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Connect your Razorpay account to receive payouts directly to your bank.
+                      </p>
+                      <Button onClick={handleConnectRazorpay}>
+                        Connect Razorpay Account
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
 
                   <div className="rounded-lg border p-4">
                     <h3 className="font-medium mb-2">Payment History</h3>

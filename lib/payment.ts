@@ -30,20 +30,48 @@ export async function getPayments(status: string) {
 
 // Updated release payment function to accept payment method
 export async function releasePayment(
-    jobId: string,
-    paymentMethod: "blockchain" | "paypal" = "blockchain"
-  ) {
-    try {
-      const response = await axiosInstance.post(`blackchain/jobs/${jobId}/release-payment`, {
-        paymentMethod,
-      });
-  
-      return response.data;
-    } catch (error) {
-      console.error("Error releasing payment:", error);
-      throw error;
-    }
+  jobId: string,
+  paymentMethod: "blockchain" | "paypal" = "blockchain"
+) {
+  if (paymentMethod === "blockchain") {
+    return releaseBlockchainPayment(jobId);
+  } else {
+    return releasePaymentGateway(jobId);
   }
+}
+
+async function releaseBlockchainPayment(jobId: string) {
+  try {
+    const response = await axiosInstance.post(
+      `blockchain/jobs/${jobId}/release-payment`,
+      {
+        paymentMethod: "blockchain",
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error releasing blockchain payment:", error);
+    throw error;
+  }
+}
+
+async function releasePaymentGateway(jobId: string) {
+  try {
+    const response = await axiosInstance.post(
+      `payments/jobs/${jobId}/release-payment`,
+      {
+        paymentMethod: "paypal",
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error releasing PayPal payment:", error);
+    throw error;
+  }
+}
+
   
 
 // Mock function - replace with actual API call
