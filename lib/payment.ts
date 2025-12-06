@@ -45,7 +45,7 @@ async function releaseBlockchainPayment(jobId: string) {
     const response = await axiosInstance.post(
       `blockchain/jobs/${jobId}/release-payment`,
       {
-        paymentMethod: "blockchain",
+        method: "blockchain",
       }
     );
 
@@ -59,9 +59,9 @@ async function releaseBlockchainPayment(jobId: string) {
 async function releasePaymentGateway(jobId: string) {
   try {
     const response = await axiosInstance.post(
-      `payments/jobs/${jobId}/release-payment`,
+      `blockchain/jobs/${jobId}/release-payment`,
       {
-        paymentMethod: "paypal",
+        method: "gateway",
       }
     );
 

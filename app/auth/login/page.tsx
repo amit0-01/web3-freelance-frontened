@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -81,6 +81,27 @@ export default function LoginPage() {
     }
   }
 
+  // Google OAuth Login
+  const handleGoogleLogin = async () => {
+    console.log('handleGoogleLogin')
+    window.location.href = 'http://localhost:8000/auth/google';
+  };
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    document.body.appendChild(script)
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
+    }
+  }, [])
+
   // Guest Login
   const handleGuestLogin = async () => {
     try {
@@ -148,6 +169,15 @@ export default function LoginPage() {
           <div className="text-center">
             <span className="text-sm">OR</span>
           </div>
+
+          <Button 
+        onClick={handleGoogleLogin} 
+        className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm" 
+        disabled={isLoading}
+        type="button"
+      >
+        {isLoading ? "Connecting..." : "Continue with Google"}
+      </Button>
 
           <Button onClick={handleWeb3Login} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isLoading}>
             {isLoading ? "Connecting..." : "Login with MetaMask"}
