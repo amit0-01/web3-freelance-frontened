@@ -15,6 +15,7 @@ export interface ChatWindowProps {
     conversation: any
     conversationId : any
     onSendMessage: (content: string) => void
+    onBack?: () => void
   }
 
   export interface MessageProps {

@@ -8,14 +8,17 @@ import ChatWindow from "@/components/chat/chat-window"
 import { Loader2, MessageSquare } from "lucide-react"
 import { toast } from "react-toastify"
 import { getUsers } from "@/services/chatService"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState<any[]>([])
   const [activeConversation, setActiveConversation] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showSidebar, setShowSidebar] = useState(true)
   const router = useRouter()
   const searchParams = useSearchParams()
   const conversationId = searchParams.get("id")
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -45,6 +48,15 @@ export default function MessagesPage() {
     fetchConversations()
   }, [conversationId, toast])
 
+  // On mobile, show sidebar when no conversation is active
+  useEffect(() => {
+    if (isMobile) {
+      setShowSidebar(!activeConversation)
+    } else {
+      setShowSidebar(true)
+    }
+  }, [isMobile, activeConversation])
+
   const handleSelectConversation = (conversation: any) => {
     setActiveConversation(conversation)
     // Update URL without full page reload
@@ -54,6 +66,11 @@ export default function MessagesPage() {
     if (conversation.unreadCount > 0) {
       markConversationAsRead(conversation.id)
     }
+  }
+
+  const handleBackToSidebar = () => {
+    setActiveConversation(null)
+    router.push("/messages", { scroll: false })
   }
 
   const markConversationAsRead = async (id: string) => {
@@ -126,42 +143,46 @@ export default function MessagesPage() {
   }
 
   return (
-<div className="flex flex-col h-screen">
-  <DashboardNav />
+    <div className="flex flex-col h-screen">
+      <DashboardNav />
 
-  <main className="flex flex-1 overflow-hidden">
-    {/* Sidebar */}
-    <div className="w-[320px] border-r flex flex-col overflow-hidden">
-      <div className="flex-1">
-        <ChatSidebar
-          conversations={conversations}
-          activeConversationId={activeConversation?.id}
-          onSelectConversation={handleSelectConversation}
-        />
-      </div>
-    </div>
-
-    {/* Chat window */}
-    <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
-      {activeConversation ? (
-        <ChatWindow
-          conversation={activeConversation}
-          conversationId={conversationId}
-          onSendMessage={handleSendMessage}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center overflow-y-auto">
-          <div className="text-center p-6">
-            <h3 className="text-lg font-medium">No conversations yet</h3>
-            <p className="text-muted-foreground">
-              When you apply for jobs or hire freelancers, your conversations will appear here.
-            </p>
+      <main className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        {(showSidebar || !isMobile) && (
+          <div className={`${isMobile ? 'w-full' : 'w-[320px]'} border-r flex flex-col overflow-hidden`}>
+            <div className="flex-1">
+              <ChatSidebar
+                conversations={conversations}
+                activeConversationId={activeConversation?.id}
+                onSelectConversation={handleSelectConversation}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  </main>
-</div>
+        )}
 
+        {/* Chat window */}
+        {(!showSidebar || !isMobile) && (
+          <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
+            {activeConversation ? (
+              <ChatWindow
+                conversation={activeConversation}
+                conversationId={conversationId}
+                onSendMessage={handleSendMessage}
+                onBack={isMobile ? handleBackToSidebar : undefined}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center overflow-y-auto">
+                <div className="text-center p-6">
+                  <h3 className="text-lg font-medium">No conversations yet</h3>
+                  <p className="text-muted-foreground">
+                    When you apply for jobs or hire freelancers, your conversations will appear here.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
   )
 }

@@ -47,13 +47,13 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
   
 
   return (
-    <div className="w-full md:w-80 border-r flex flex-col h-full">
-      <div className="p-4 border-b">
+    <div className="w-full border-r flex flex-col h-full">
+      <div className="p-3 md:p-4 border-b">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search conversations..."
-            className="pl-8"
+            className="pl-8 text-sm md:text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -61,9 +61,9 @@ export default function ChatSidebar({ conversations, activeConversationId, onSel
       </div>
       <div className="flex-1 overflow-y-auto">
         {sortedConversations.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">No conversations found</div>
+          <div className="p-4 text-center text-muted-foreground text-sm md:text-base">No conversations found</div>
         ) : (
-          <div className="py-2">
+          <div className="py-1 md:py-2">
             {sortedConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}

@@ -5,14 +5,14 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Paperclip, MoreVertical, ExternalLink, Phone, PhoneOff } from "lucide-react"
+import { Send, Paperclip, MoreVertical, ExternalLink, Phone, PhoneOff, ArrowLeft } from "lucide-react"
 import { getUserDetails } from "@/lib/utils"
 import Link from "next/link"
 import socket, { joinRoom, offReceiveMessage, sendMessage } from "@/services/socket"
 import type { ChatWindowProps } from "@/lib/chat.interface"
 import { Message } from "../ui/message"
 
-export default function ChatWindow({ conversation, conversationId, onSendMessage }: ChatWindowProps) {
+export default function ChatWindow({ conversation, conversationId, onSendMessage, onBack }: ChatWindowProps) {
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -498,50 +498,60 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+      <div className="flex items-center justify-between p-3 md:p-4 border-b">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
+            >
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+            </Button>
+          )}
+          <div className="relative flex-shrink-0">
             {participant.avatar ? (
               <img
                 src={participant.avatar || "/placeholder.svg"}
                 alt={participant.name}
-                className="h-10 w-10 rounded-full object-cover"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full object-cover"
               />
             ) : (
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="font-medium text-primary">{participant.name.charAt(0)}</span>
+              <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="font-medium text-primary text-xs md:text-sm">{participant.name.charAt(0)}</span>
               </div>
             )}
             <span
-              className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white ${
+              className={`absolute bottom-0 right-0 block h-2.5 w-2.5 md:h-3 md:w-3 rounded-full ring-2 ring-white ${
                 online ? "bg-green-500" : "bg-gray-400"
               }`}
               title={online ? "Online" : "Offline"}
             />
           </div>
-          <div className="flex gap-3">
-            <div>
-              <h3 className="font-medium">{participant.name}</h3>
-              {typing && <p className="text-sm text-muted-foreground">Typing...</p>}
+          <div className="flex gap-0.5 md:gap-1 min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <h3 className="font-medium text-sm md:text-base truncate">{participant.name}</h3>
             </div>
-            <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <Link href={`/jobs/${jobIds[0]}`} className="hover:underline flex items-center">
-                {jobTitle} <ExternalLink className="h-3 w-3 ml-1" />
+            {typing && <p className="text-xs md:text-sm text-muted-foreground">Typing...</p>}
+            <div className="text-xs md:text-sm text-muted-foreground hidden md:flex items-center gap-1">
+              <Link href={`/jobs/${jobIds[0]}`} className="hover:underline flex items-center truncate">
+                {jobTitle} <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
               </Link>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"
             onClick={startCall}
             disabled={inCall}
             title="Start video call"
-            className="hover:bg-blue-50 dark:hover:bg-blue-950"
+            className="hover:bg-blue-50 dark:hover:bg-blue-950 h-8 w-8 md:h-10 md:w-10"
           >
-            <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Phone className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
           </Button>
 
           {inCall && (
@@ -550,14 +560,14 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
               size="icon"
               onClick={endCall}
               title="End video call"
-              className="hover:bg-red-50 dark:hover:bg-red-950"
+              className="hover:bg-red-50 dark:hover:bg-red-950 h-8 w-8 md:h-10 md:w-10"
             >
-              <PhoneOff className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <PhoneOff className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" title="More options">
-            <MoreVertical className="h-5 w-5" />
+          <Button variant="ghost" size="icon" title="More options" className="h-8 w-8 md:h-10 md:w-10">
+            <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
         </div>
       </div>
@@ -571,20 +581,20 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
               autoPlay 
               muted 
               playsInline 
-              className="w-40 h-40 bg-black rounded object-cover" 
+              className="w-24 h-24 md:w-40 md:h-40 bg-black rounded object-cover" 
             />
-            <span className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            <span className="absolute bottom-1 left-1 md:bottom-2 md:left-2 bg-black/50 text-white text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded">
               You
             </span>
           </div>
-          <div className="relative">
+          <div className="relative flex-1">
             <video 
               ref={remoteVideoRef} 
               autoPlay 
               playsInline 
-              className="w-40 h-40 bg-black rounded object-cover" 
+              className="w-full h-24 md:h-40 bg-black rounded object-cover" 
             />
-            <span className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            <span className="absolute bottom-1 left-1 md:bottom-2 md:left-2 bg-black/50 text-white text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded">
               {participant.name}
             </span>
           </div>
@@ -592,11 +602,11 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 overflow-y-auto p-3 md:p-4">
+        <div className="space-y-3 md:space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No messages yet. Start the conversation!</p>
+              <p className="text-sm md:text-base">No messages yet. Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg, index) => (
@@ -608,10 +618,10 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Button type="button" variant="ghost" size="icon" className="flex-shrink-0">
-            <Paperclip className="h-5 w-5" />
+      <div className="p-3 md:p-4 border-t">
+        <form onSubmit={handleSubmit} className="flex gap-1.5 md:gap-2">
+          <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
+            <Paperclip className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <Input
             placeholder="Type a message..."
@@ -621,10 +631,10 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
               handleTyping()
             }}
             disabled={isSubmitting}
-            className="flex-1"
+            className="flex-1 text-sm md:text-base h-8 md:h-10"
           />
-          <Button type="submit" size="icon" disabled={!message.trim() || isSubmitting} className="flex-shrink-0">
-            <Send className="h-5 w-5" />
+          <Button type="submit" size="icon" disabled={!message.trim() || isSubmitting} className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
+            <Send className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
         </form>
       </div>
