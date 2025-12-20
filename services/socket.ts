@@ -50,9 +50,10 @@ export const sendMessage = (
   roomId: string,
   receiverId: string,
   senderId: string,
-  message: string
+  message: string,
+  attachment?: { name: string; type: string; size: number; url: string }
 ) => {
-  socket.emit("sendMessage", { roomId, receiverId, senderId, message });
+  socket.emit("sendMessage", { roomId, receiverId, senderId, message, attachment });
 };
 
 export const onReceiveMessage = (cb: (data: any) => void) => {

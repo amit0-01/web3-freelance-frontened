@@ -5,17 +5,27 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Paperclip, MoreVertical, ExternalLink, Phone, PhoneOff, ArrowLeft } from "lucide-react"
+import { Send, Paperclip, MoreVertical, ExternalLink, Phone, PhoneOff, ArrowLeft, X, Image as ImageIcon, FileIcon, Loader2 } from "lucide-react"
 import { getUserDetails } from "@/lib/utils"
 import Link from "next/link"
 import socket, { joinRoom, offReceiveMessage, sendMessage } from "@/services/socket"
 import type { ChatWindowProps } from "@/lib/chat.interface"
 import { Message } from "../ui/message"
 
+interface FilePreview {
+  file: File
+  preview: string
+  attachment?: { name: string; type: string; size: number; url: string }
+  uploading?: boolean
+}
+
 export default function ChatWindow({ conversation, conversationId, onSendMessage, onBack }: ChatWindowProps) {
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<FilePreview[]>([])
+  const [isUploading, setIsUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { participant, jobIds, jobTitle } = conversation
   const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string }>>(
     conversation.messages || [],
@@ -457,16 +467,151 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
     }
   }, [])
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const newFiles: FilePreview[] = []
+
+    for (const file of Array.from(files)) {
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} exceeds 10MB limit`)
+        continue
+      }
+
+      const preview: FilePreview = {
+        file,
+        preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+        uploading: false,
+      }
+      newFiles.push(preview)
+    }
+
+    const currentLength = selectedFiles.length
+    setSelectedFiles((prev) => [...prev, ...newFiles])
+
+    // Auto-upload files after state update
+    setTimeout(() => {
+      newFiles.forEach((filePreview, i) => {
+        uploadFile(currentLength + i, filePreview.file)
+      })
+    }, 0)
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const uploadFile = async (index: number, file: File) => {
+    setSelectedFiles((prev) => {
+      const filePreview = prev[index]
+      if (!filePreview || filePreview.attachment) return prev
+      
+      const updated = [...prev]
+      updated[index] = { ...updated[index], uploading: true }
+      return updated
+    })
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file")
+      }
+
+      const data = await response.json()
+
+      setSelectedFiles((prev) => {
+        const updated = [...prev]
+        updated[index] = {
+          ...updated[index],
+          attachment: data.attachment,
+          uploading: false,
+        }
+        return updated
+      })
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      setSelectedFiles((prev) => {
+        const updated = [...prev]
+        updated[index] = { ...updated[index], uploading: false }
+        return updated
+      })
+      alert(`Failed to upload ${file.name}`)
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => {
+      const updated = [...prev]
+      // Revoke object URL if it's an image
+      if (updated[index].preview) {
+        URL.revokeObjectURL(updated[index].preview)
+      }
+      return updated.filter((_, i) => i !== index)
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = message.trim()
-    if (!trimmed || isSubmitting) return
+    const hasFiles = selectedFiles.length > 0 && selectedFiles.every((f) => f.attachment)
+    
+    if ((!trimmed && !hasFiles) || isSubmitting) return
 
     setIsSubmitting(true)
     try {
       const userId = getUserDetails().id
-      sendMessage(jobIds[0], participant.id, userId, trimmed)
+      
+      // Send message with attachments if any
+      if (hasFiles) {
+        // If there's only one file and text, combine them
+        if (selectedFiles.length === 1 && trimmed) {
+          sendMessage(
+            jobIds[0],
+            participant.id,
+            userId,
+            trimmed,
+            selectedFiles[0].attachment
+          )
+        } else {
+          // Send text first if exists
+          if (trimmed) {
+            sendMessage(jobIds[0], participant.id, userId, trimmed)
+          }
+          // Then send each file as a separate message
+          for (const filePreview of selectedFiles) {
+            if (filePreview.attachment) {
+              sendMessage(
+                jobIds[0],
+                participant.id,
+                userId,
+                filePreview.attachment.name,
+                filePreview.attachment
+              )
+            }
+          }
+        }
+      } else {
+        sendMessage(jobIds[0], participant.id, userId, trimmed)
+      }
+
       setMessage("")
+      // Clean up file previews
+      selectedFiles.forEach((fp) => {
+        if (fp.preview) {
+          URL.revokeObjectURL(fp.preview)
+        }
+      })
+      setSelectedFiles([])
     } catch (error) {
       console.error("Error sending message:", error)
     } finally {
@@ -617,10 +762,73 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
         </div>
       </ScrollArea>
 
+      {/* File Previews */}
+      {selectedFiles.length > 0 && (
+        <div className="p-3 md:p-4 border-t bg-muted/30">
+          <div className="flex gap-2 flex-wrap">
+            {selectedFiles.map((filePreview, index) => (
+              <div
+                key={index}
+                className="relative group border rounded-lg overflow-hidden bg-background"
+              >
+                {filePreview.file.type.startsWith("image/") ? (
+                  <div className="relative w-20 h-20 md:w-24 md:h-24">
+                    <img
+                      src={filePreview.preview}
+                      alt={filePreview.file.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {filePreview.uploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 md:w-24 md:h-24 flex flex-col items-center justify-center p-2">
+                    <FileIcon className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground mb-1" />
+                    <span className="text-[10px] md:text-xs text-center truncate w-full px-1">
+                      {filePreview.file.name}
+                    </span>
+                    {filePreview.uploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                      </div>
+                    )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3 md:h-4 md:w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-3 md:p-4 border-t">
         <form onSubmit={handleSubmit} className="flex gap-1.5 md:gap-2">
-          <Button type="button" variant="ghost" size="icon" className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+            accept="image/*,application/pdf,.doc,.docx,.txt,.xls,.xlsx"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isSubmitting}
+          >
             <Paperclip className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <Input
@@ -633,8 +841,17 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
             disabled={isSubmitting}
             className="flex-1 text-sm md:text-base h-8 md:h-10"
           />
-          <Button type="submit" size="icon" disabled={!message.trim() || isSubmitting} className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
-            <Send className="h-4 w-4 md:h-5 md:w-5" />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={(!message.trim() && selectedFiles.length === 0) || isSubmitting || isUploading}
+            className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 md:h-5 md:w-5" />
+            )}
           </Button>
         </form>
       </div>
