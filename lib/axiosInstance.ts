@@ -6,8 +6,9 @@ import { storageService } from "../services/storageService";
 const apiUrl = 
 "http://localhost:8000";
 // "https://web3-freelance-backend.onrender.com"
-// "http://10.121.222.106:8000"
-// "https://b6a5d05cfbe5.ngrok-free.app"
+"http://10.121.222.106:8000"
+
+"https://e327851f671f.ngrok-free.app" 
 const axiosInstance = axios.create({
   baseURL: apiUrl,
   headers: {

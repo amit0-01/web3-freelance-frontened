@@ -83,9 +83,9 @@ export default function PaymentsPage() {
 
     setIsProcessing(true)
     try {
-      const response: any = await releasePayment(selectedPayment.job.id, paymentMethod)
-
-      if (response.data?.success) {
+      const response: any = await releasePayment(selectedPayment.job.id, paymentMethod, selectedPayment.id)
+      console.log('response', response)
+      if (response.success) {
         toast.success("Payment released successfully")
         setIsPaymentMethodModalOpen(false)
         loadPayments()

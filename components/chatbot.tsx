@@ -5,7 +5,8 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageCircle, X, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, getUserDetails } from "@/lib/utils"
+import { chatbotService } from "@/services/chatbot.service"
 
 interface Message {
   id: string
@@ -33,9 +34,9 @@ export default function Chatbot() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
-
+    
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       role: "user",
       content: input.trim(),
       timestamp: new Date(),
@@ -46,22 +47,7 @@ export default function Chatbot() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/chatbot/message`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: userMessage.content,
-            conversationId: conversationId || undefined,
-            userId: undefined, // You can add user authentication later
-          }),
-        },
-      )
-
-      const result = await response.json()
+      const result = await chatbotService.sendMessage(userMessage.content, conversationId, getUserDetails().id)
 
       if (result.status === "success" && result.data) {
         if (result.data.conversationId) {
@@ -87,7 +73,7 @@ export default function Chatbot() {
         setMessages((prev) => [...prev, errorMessage])
       }
     } catch (error) {
-      console.error("[v0] Error calling chatbot API:", error)
+      console.error("Error in chatbot service:", error)
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: "assistant",

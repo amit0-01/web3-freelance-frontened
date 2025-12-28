@@ -31,12 +31,13 @@ export async function getPayments(status: string) {
 // Updated release payment function to accept payment method
 export async function releasePayment(
   jobId: string,
-  paymentMethod: "blockchain" | "paypal" = "blockchain"
+  paymentMethod: "blockchain" | "paypal" = "blockchain",
+  paymentId : string
 ) {
   if (paymentMethod === "blockchain") {
     return releaseBlockchainPayment(jobId);
   } else {
-    return releasePaymentGateway(jobId);
+    return releasePaymentGateway(jobId, paymentId);
   }
 }
 
@@ -56,12 +57,13 @@ async function releaseBlockchainPayment(jobId: string) {
   }
 }
 
-async function releasePaymentGateway(jobId: string) {
+async function releasePaymentGateway(jobId: string, paymentId : string) {
   try {
     const response = await axiosInstance.post(
       `blockchain/jobs/${jobId}/release-payment`,
       {
         method: "gateway",
+        paymentId : paymentId
       }
     );
 
