@@ -28,8 +28,25 @@ export default function Chatbot() {
   }
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    // Scroll to bottom when messages change or when chat is opened
+    if (isOpen) {
+      // Small timeout to ensure the DOM has updated
+      const timer = setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [messages, isOpen])
+
+  // Initial scroll to bottom when component mounts
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

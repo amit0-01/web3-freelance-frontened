@@ -12,11 +12,8 @@ import PaymentMethodModal from "@/components/payment-method-modal"
 import { formatDate } from "@/lib/utils"
 import { type Payment, getPayments, releasePayment } from "@/lib/payment"
 import { toast } from "react-toastify"
+import { loadRazorpay } from "@/lib/razorpay"
 
-interface Job {
-  id: string
-  title: string
-}
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
@@ -43,7 +40,7 @@ export default function PaymentsPage() {
   }
 
   useEffect(() => {
-    loadPayments()
+    loadPayments()  
   }, [activeTab])
 
   useEffect(() => {
@@ -78,28 +75,89 @@ export default function PaymentsPage() {
     setIsPaymentMethodModalOpen(true)
   }
 
-  const handleConfirmRelease = async (paymentMethod: "blockchain" | "paypal") => {
-    if (!selectedPayment) return
 
-    setIsProcessing(true)
-    try {
-      const response: any = await releasePayment(selectedPayment.job.id, paymentMethod, selectedPayment.id)
-      console.log('response', response)
-      if (response.success) {
-        toast.success("Payment released successfully")
+const handleConfirmRelease = async (paymentMethod: "blockchain" | "paypal") => {
+  if (!selectedPayment) return
+
+  setIsProcessing(true)
+
+  try {
+    // Blockchain flow (unchanged)
+    if (paymentMethod === "blockchain") {
+      const res = await releasePayment(
+        selectedPayment.job.id,
+        "blockchain",
+        selectedPayment.id
+      )
+
+      if (res?.success) {
+        toast.success("Blockchain payment released")
         setIsPaymentMethodModalOpen(false)
         loadPayments()
-      } else {
-        toast.error("Something went wrong while releasing payment")
-        console.error("Unexpected response:", response)
       }
-    } catch (error: any) {
-      toast.error("Failed to release payment")
-      console.error("Release payment error:", error?.response || error)
-    } finally {
-      setIsProcessing(false)
+      return
     }
+
+    // ----------------------------
+    // ✅ Razorpay Gateway Flow
+    // ----------------------------
+
+    const razorpayLoaded = await loadRazorpay()
+    if (!razorpayLoaded) {
+      toast.error("Razorpay SDK failed to load")
+      return
+    }
+
+    const res = await releasePayment(
+      selectedPayment.job.id,
+      "paypal", // gateway
+      selectedPayment.id
+    )
+
+    if (!res?.success) {
+      toast.error("Failed to initiate Razorpay payment")
+      return
+    }
+
+    // 🔥 OPEN RAZORPAY MODAL
+    const options = {
+      key: res.keyId,
+      amount: res.amount, // paise
+      currency: res.currency,
+      order_id: res.orderId,
+      name: "Web3 Freelance Platform",
+      description: "Release payment to freelancer",
+
+      handler: function (response: any) {
+        toast.success("Payment successful 🎉")
+        setIsPaymentMethodModalOpen(false)
+
+        // Payment confirmation will come via webhook
+        setTimeout(() => loadPayments(), 2000)
+      },
+
+      modal: {
+        ondismiss: () => {
+          toast.info("Payment popup closed")
+        },
+      },
+
+      theme: {
+        color: "#6366f1",
+      },
+    }
+
+    const razorpay = new (window as any).Razorpay(options)
+    razorpay.open()
+
+  } catch (error: any) {
+    toast.error("Payment failed")
+    console.error(error)
+  } finally {
+    setIsProcessing(false)
   }
+}
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -260,7 +318,7 @@ export default function PaymentsPage() {
                                         View Job
                                       </Button>
                                     </Link>
-                                   {payment.status != "released" &&
+                                   {payment.status.toLowerCase() != "released" &&
                                     <Button size="sm" onClick={() => openReleaseModal(payment)}>
                                       Release Payment
                                     </Button>

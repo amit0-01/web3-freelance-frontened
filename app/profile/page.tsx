@@ -48,6 +48,10 @@ export default function ProfilePage() {
     }
   }
 
+  useEffect(() =>{
+    console.log('profile', profile)
+  }, [profile])
+
   const fetchRazorPayStatus = async () =>{
     try {
       const response  = await checkRazorPayStatus()
@@ -138,7 +142,15 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="skills">Skills (comma separated)</Label>
-                      <Input id="skills" name="skills" defaultValue={profile?.skills?.join(", ")} />
+                      <Input
+                        id="skills"
+                        name="skills"
+                        defaultValue={
+                          Array.isArray(profile?.skills)
+                            ? profile.skills.join(", ")
+                            : profile?.skills || ""
+                        }
+                      />
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-3">
