@@ -1,4 +1,4 @@
-import { ConversationItemProps } from "@/lib/chat.interface"
+import { ConversationItemProps } from "@/types/chat.interface"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 

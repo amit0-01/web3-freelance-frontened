@@ -4,11 +4,8 @@ import JobsClient from "./JobsClient";
 import { getAdminPostedJobs, getJobs } from "@/lib/api";
 import { JobsListSkeleton } from "./skeleton";
 import { getUserRole } from "@/lib/utils";
+import { JobsListProps } from "@/types/job.interface";
 
-interface JobsListProps {
-  search?: string
-  category? : string
-}
 
 
 export default function JobsList({ search, category }: JobsListProps) {

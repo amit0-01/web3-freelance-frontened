@@ -1,10 +1,5 @@
-import { NextResponse } from "next/server"
-
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+import { NextResponse } from "next/server"  
+import { RouteParams } from "@/types/chat.interface"
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {

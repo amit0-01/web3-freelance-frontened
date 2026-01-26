@@ -16,18 +16,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import type { Job } from "@/lib/api"
 import axiosInstance from "@/lib/axiosInstance"
 import { useParams } from "next/navigation"
 import { toast } from 'react-toastify';
-
-
-interface ApplyJobModalProps {
-  job: Job
-  isOpen: boolean
-  onClose: () => void
-}
+import { ApplyJobModalProps } from "@/types/job.interface"
 
 export default function ApplyJobModal({ job, isOpen, onClose }: ApplyJobModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)

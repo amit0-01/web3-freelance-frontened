@@ -9,15 +9,11 @@ import { Send, Paperclip, MoreVertical, ExternalLink, Phone, PhoneOff, ArrowLeft
 import { getUserDetails } from "@/lib/utils"
 import Link from "next/link"
 import socket, { joinRoom, offReceiveMessage, sendMessage } from "@/services/socket"
-import type { ChatWindowProps } from "@/lib/chat.interface"
+import type { ChatWindowProps } from "@/types/chat.interface"
 import { Message } from "../ui/message"
+import { FilePreview } from "@/types/chat.interface"
 
-interface FilePreview {
-  file: File
-  preview: string
-  attachment?: { name: string; type: string; size: number; url: string }
-  uploading?: boolean
-}
+
 
 export default function ChatWindow({ conversation, conversationId, onSendMessage, onBack }: ChatWindowProps) {
   const [message, setMessage] = useState("")

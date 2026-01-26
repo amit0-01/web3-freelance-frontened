@@ -13,16 +13,9 @@ import {
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Zap, CreditCard } from "lucide-react"
+import { PaymentMethodModalProps } from "@/types/payment.interface"
 
-interface PaymentMethodModalProps {
-  isOpen: boolean
-  paymentAmount: number
-  paymentTitle: string
-  onSelectBlockchain: () => void
-  onSelectPayPal: () => void
-  onCancel: () => void
-  isLoading?: boolean
-}
+
 
 export default function PaymentMethodModal({
   isOpen,

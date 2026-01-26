@@ -5,14 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserRole } from "@/lib/utils";
+import { Job } from "@/lib/api";
 
-interface Job {
-  id: number;
-  title: string;
-  description: string;
-  payment: string;
-  category: string;
-}
 
 export default function JobsClient({ jobs, role }: { jobs: Job[], role: string }) {
 

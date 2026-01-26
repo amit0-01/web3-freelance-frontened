@@ -16,17 +16,8 @@ import axiosInstance from "@/lib/axiosInstance"
 import { getUserRole } from "@/lib/utils"
 import { toast } from "react-toastify"
 import { ethers } from "ethers"
+import { JobApplication } from "@/types/job.interface"
 
-interface JobApplication {
-  id: string
-  jobId: string
-  jobTitle: string
-  coverLetter: string
-  proposedRate: number
-  estimatedDuration: string
-  status: string
-  submittedAt: string
-}
 
 export default function UserApplications() {
   const [applications, setApplications] = useState<JobApplication[]>([])

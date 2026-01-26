@@ -22,3 +22,16 @@ export interface ChatWindowProps {
     message: any
     isOwn: boolean
   }
+
+export interface RouteParams {
+  params: {
+    id: string
+  }
+}
+
+export interface FilePreview {
+  file: File
+  preview: string
+  attachment?: { name: string; type: string; size: number; url: string }
+  uploading?: boolean
+}

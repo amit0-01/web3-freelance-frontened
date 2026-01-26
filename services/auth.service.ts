@@ -1,4 +1,4 @@
-import { LoginPayload } from "@/lib/auth.interface";
+import { LoginPayload } from "@/types/auth.interface";
 import axiosInstance from "@/lib/axiosInstance";
 
 export const Logout = async () => {

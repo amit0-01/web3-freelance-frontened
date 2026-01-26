@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { ConversationItem } from "../ui/conversationItem"
-import { ChatSidebarProps } from "@/lib/chat.interface"
+import { ChatSidebarProps } from "@/types/chat.interface"
 import socket from "@/services/socket"
 
 

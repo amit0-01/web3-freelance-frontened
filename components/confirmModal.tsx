@@ -9,18 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { ConfirmModalProps } from "@/lib/modal.interface"
 
-interface ConfirmModalProps {
-  isOpen: boolean
-  title: string
-  message: string
-  onConfirm: () => void
-  onCancel: () => void
-  confirmText?: string
-  cancelText?: string
-  isLoading?: boolean
-  isDangerous?: boolean
-}
+
 
 export default function ConfirmModal({
   isOpen,

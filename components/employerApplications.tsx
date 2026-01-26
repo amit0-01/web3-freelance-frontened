@@ -10,29 +10,8 @@ import axiosInstance from "@/lib/axiosInstance"
 import { toast } from "react-toastify"
 import { changeApplicationStatus } from "@/services/employerJobService"
 import { Calendar, Clock, Wallet, Mail, ChevronDown, ChevronUp, Briefcase } from "lucide-react"
+import { JobWithApplications } from "@/types/application.interface"
 
-interface Application {
-  id: string
-  coverLetter: string
-  proposedRate: number
-  estimatedDuration: string
-  status: string
-  createdAt: string
-  skills?: string[]
-  experience?: string
-  user: {
-    id: number
-    name: string
-    email: string
-  }
-}
-
-interface JobWithApplications {
-  id: number
-  title: string
-  description: string
-  applications: Application[]
-}
 
 export default function EmployerApplications() {
   const [jobs, setJobs] = useState<JobWithApplications[]>([])

@@ -7,13 +7,8 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn, getUserDetails } from "@/lib/utils"
 import { chatbotService } from "@/services/chatbot.service"
+import { Message } from "@/types/chatbot.interface"
 
-interface Message {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: Date
-}
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)

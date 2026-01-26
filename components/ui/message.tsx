@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageProps } from "@/lib/chat.interface";
+import { MessageProps } from "@/types/chat.interface";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { FileIcon, Download, Image as ImageIcon } from "lucide-react";

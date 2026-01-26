@@ -7,3 +7,10 @@ export interface ChatbotResponse {
     conversationId?: string;
   };
 }
+
+export interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+}

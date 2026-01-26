@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server"
-
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+import { RouteParams } from "@/types/chat.interface"
 
 export async function POST(request: Request, { params }: RouteParams) {
   try {

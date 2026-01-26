@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axiosInstance";
-import { ChatbotResponse } from "@/app/core/interfaces/chatbot.interface";
+import { ChatbotResponse } from "@/types/chatbot.interface";
 
 export const chatbotService = {
   async sendMessage(message: string, conversationId?: string, userId?: string): Promise<ChatbotResponse> {

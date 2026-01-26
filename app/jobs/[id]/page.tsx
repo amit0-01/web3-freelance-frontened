@@ -10,14 +10,6 @@ import { useState, useEffect } from "react"
 import ApplyJobModal from "@/components/apply-job-modal"
 import { use } from "react";
 
-
-
-interface JobDetailPageProps {
-  params: {
-    id: string
-  }
-}
-
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
