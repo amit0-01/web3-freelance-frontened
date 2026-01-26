@@ -3,8 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { storageService } from "../services/storageService";
 
-const apiUrl = 
-"http://localhost:8000";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL!
 // "https://web3-freelance-backend.onrender.com"
 // "http://10.121.222.106:8000"
 
