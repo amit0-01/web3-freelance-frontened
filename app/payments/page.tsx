@@ -177,7 +177,7 @@ const handleConfirmRelease = async (paymentMethod: "blockchain" | "paypal") => {
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
-        <DashboardNav />
+        {/* <DashboardNav /> */}
         <main className="flex-1 p-6 md:p-10">
           <div className="flex justify-center items-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -189,7 +189,7 @@ const handleConfirmRelease = async (paymentMethod: "blockchain" | "paypal") => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <DashboardNav />
+      {/* <DashboardNav /> */}
       <main className="flex-1 p-6 md:p-10">
         <div className="grid gap-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
