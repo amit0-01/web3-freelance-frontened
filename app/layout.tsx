@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css" // ✅ REQUIRED for toast styles
 import AuthWrapper from "@/components/AuthWrapper"
-import Chatbot from "@/components/chatbot"
+import ConditionalChatbot from "@/components/ConditionalChatbot"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -33,7 +33,7 @@ export default function RootLayout({
           >
             {children}
             <ToastContainer position="top-right" autoClose={5000} theme="colored" />
-            <Chatbot/>
+            <ConditionalChatbot />
           </ThemeProvider>
         </AuthWrapper>
       </body>

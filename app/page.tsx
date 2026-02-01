@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react"
 import { getUserDetails } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import Header from "@/components/Header"
-import Chatbot from "@/components/chatbot"
+// import Chatbot from "@/components/chatbot"
 import { motion } from "framer-motion"
 
 export default function Home() {
@@ -312,7 +312,7 @@ export default function Home() {
           </Link>
         </nav>
       </motion.footer>
-      <Chatbot />
+      {/* <Chatbot /> */}
     </div>
   )
 }
