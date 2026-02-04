@@ -27,7 +27,8 @@ export interface Job {
   postedDate: string;
   deadline : string
   paymentType: string;
-  status: string
+  status?: string;
+  budget : number;
 }
 
 export interface Payment {
