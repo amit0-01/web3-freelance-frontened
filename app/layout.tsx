@@ -4,8 +4,8 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css" // ✅ REQUIRED for toast styles
-import AuthWrapper from "@/components/AuthWrapper"
+import "react-toastify/dist/ReactToastify.css" 
+// import AuthWrapper from "@/components/AuthWrapper"
 import ConditionalChatbot from "@/components/ConditionalChatbot"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en"  suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthWrapper>
+        {/* <AuthWrapper> */}
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -35,7 +35,7 @@ export default function RootLayout({
             <ToastContainer position="top-right" autoClose={5000} theme="colored" />
             <ConditionalChatbot />
           </ThemeProvider>
-        </AuthWrapper>
+        {/* </AuthWrapper> */}
       </body>
     </html>
   )
