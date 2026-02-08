@@ -1,7 +1,7 @@
 // Mock data for development purposes
 // In a real app, these would be API calls to your NestJS backend
 
-import { cookies } from "next/headers"
+// import { cookies } from "next/headers"
 import axiosInstance from "./axiosInstance"
 import axios from 'axios';
 
