@@ -1,48 +1,36 @@
-"use client";
 import axios from "axios";
-import Cookies from "js-cookie";
 import { storageService } from "../services/storageService";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL!
-// "https://web3-freelance-backend.onrender.com"
-// "http://10.121.222.106:8000"
+const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
 
-// "https://e327851f671f.ngrok-free.app" 
 const axiosInstance = axios.create({
   baseURL: apiUrl,
   headers: {
-    'ngrok-skip-browser-warning': 'true',
-    'Content-Type': 'application/json',
-  }
+    "ngrok-skip-browser-warning": "true",
+    "Content-Type": "application/json",
+  },
 });
 
 axiosInstance.interceptors.request.use(
   async (config) => {
-    // Use js-cookie to get the accessToken on the client side
-    const userData:any = storageService.getItem("user");
-    if(userData){
-      const token = userData.accessToken;
-      if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      } else {
-        console.warn("No accessToken found in cookies");
+    const userData: any = storageService.getItem("user");
+    const tokenExpiry = storageService.getItem<number>("tokenExpiry");
+
+    // 🔥 Check expiry
+    if (tokenExpiry && Date.now() > tokenExpiry) {
+      storageService.clearStorage();
+      if (typeof window !== "undefined") {
+        window.location.href = "auth/login";
       }
+      return Promise.reject("Token expired");
+    }
+    if (userData?.accessToken) {
+      config.headers["Authorization"] = `Bearer ${userData.accessToken}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default axiosInstance;

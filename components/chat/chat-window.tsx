@@ -671,15 +671,21 @@ export default function ChatWindow({ conversation, conversationId, onSendMessage
             />
           </div>
           <div className="flex gap-0.5 md:gap-1 min-w-0 flex-1">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex flex-col  min-w-0">
               <h3 className="font-medium text-sm md:text-base truncate">{participant.name}</h3>
+              {typing && <p className="text-xs md:text-sm text-muted-foreground">Typing...</p>}
+              <p className="text-xs md:text-sm text-muted-foreground">{online ? "Online" : "Offline"} </p>
             </div>
-            {typing && <p className="text-xs md:text-sm text-muted-foreground">Typing...</p>}
-            <div className="text-xs md:text-sm text-muted-foreground hidden md:flex items-center gap-1">
+            <div className="flex flex-grow justify-end">
               <Link href={`/jobs/${jobIds[0]}`} className="hover:underline flex items-center truncate">
                 {jobTitle} <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
               </Link>
             </div>
+          </div>
+          <div>
+
+          </div>
+          <div>
           </div>
         </div>
 
